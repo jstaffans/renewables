@@ -20,5 +20,5 @@ def parse_date(d):
 def generation(control_area, date):
     start = parse_date(date)
     end = start + timedelta(days=1)
-    result = generation_task('EU', control_area, start, end)
-    print(result)
+    result = generation_task(ba_name='EU', control_area=control_area, start=start, end=end)
+    result.to_csv('generation_{:%Y-%m-%d}.csv'.format(start))
