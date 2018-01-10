@@ -3,3 +3,4 @@ numpy==1.13.3
 pandas==0.21.1
 pytest==3.3.2
 pyiso==0.4.0
+funcy==1.10

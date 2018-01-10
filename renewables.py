@@ -3,7 +3,7 @@ import click
 from dateutil.parser import parse
 from datetime import datetime, timedelta
 
-from app.tasks import generation as generation_task
+from app.tasks.generation import generation as generation_task
 
 app = Flask(__name__)
 
