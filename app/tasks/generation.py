@@ -37,7 +37,12 @@ def _group_without_missing_data(group):
     return pd.concat([df_for_timestamp(t) for t in series], ignore_index=True)
 
 def group_by_hour(raw):
+    # The last generation report of the day has a timestamp that is
+    # day+1 at 00:00 (each report contains data of the previous 15 minutes).
+    # Adjust timestamp a little to get all generation reports within the
+    # boundary of one day.
     raw['timestamp_adjusted'] = raw['timestamp'] - pd.Timedelta('1s')
+
     raw['date'] = raw['timestamp_adjusted'].dt.date
     raw['hour'] = raw['timestamp_adjusted'].dt.hour
 
