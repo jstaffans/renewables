@@ -13,8 +13,13 @@ def raw_generation(ba_name, control_area, start, end):
     data = entso.get_generation(latest=True, control_area=control_area, start_at=start, end_at=end)
     return pd.DataFrame(data)
 
+def deduplicate(raw):
+    """Sum generation readings that have the same fuel_name"""
+    by_fuel = raw.groupby(['fuel_name', 'timestamp'])
+    return by_fuel.agg({'gen_MW': np.sum}).reset_index()
+
 def add_missing_megawatts(raw):
-    """Add 0 gen_MW for missing timestamps"""
+    """Add 0 generation reading for missing timestamps"""
     by_fuel = raw.groupby(['fuel_name'])
     return pd.concat([_group_without_missing_data(g) for _, g in by_fuel], ignore_index=True)
 
@@ -46,17 +51,13 @@ def group_by_hour(raw):
     raw['date'] = raw['timestamp_adjusted'].dt.date
     raw['hour'] = raw['timestamp_adjusted'].dt.hour
 
-    aggregation = {
-        'gen_MW': np.mean,
-    }
-
     return raw\
         .groupby([lambda i: i // 4, 'fuel_name', 'date', 'hour'])\
-        .agg(aggregation)\
+        .agg({'gen_MW': np.mean})\
         .reset_index()\
         .drop(['level_0'], axis=1)
 
-transform = compose(group_by_hour, add_missing_megawatts)
+transform = compose(group_by_hour, add_missing_megawatts, deduplicate)
 
 def generation(ba_name='EU', control_area=None, start=None, end=None):
     raw = raw_generation(ba_name, control_area, start, end)
