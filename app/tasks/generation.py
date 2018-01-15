@@ -41,7 +41,9 @@ def _group_without_missing_data(group):
 
     return pd.concat([df_for_timestamp(t) for t in series], ignore_index=True)
 
-def group_by_hour(raw):
+def downsample(raw):
+    """Downsample to 1 hour (original reports use 15m interval)"""
+
     # The last generation report of the day has a timestamp that is
     # day+1 at 00:00 (each report contains data of the previous 15 minutes).
     # Adjust timestamp a little to get all generation reports within the
@@ -57,7 +59,7 @@ def group_by_hour(raw):
         .reset_index()\
         .drop(['level_0'], axis=1)
 
-transform = compose(group_by_hour, add_missing_megawatts, deduplicate)
+transform = compose(downsample, add_missing_megawatts, deduplicate)
 
 def generation(ba_name='EU', control_area=None, start=None, end=None):
     raw = raw_generation(ba_name, control_area, start, end)
