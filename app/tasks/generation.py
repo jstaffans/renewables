@@ -15,7 +15,7 @@ def raw_generation(ba_name, control_area, start, end):
 
 def deduplicate(raw):
     """Sum generation readings that have the same fuel_name"""
-    by_fuel = raw.groupby(['fuel_name', 'timestamp'])
+    by_fuel = raw.groupby(['fuel_name', 'timestamp', 'freq'])
     return by_fuel.agg({'gen_MW': np.sum}).reset_index()
 
 def add_missing_megawatts(raw):
@@ -43,6 +43,7 @@ def _group_without_missing_data(group):
 
 def downsample(raw):
     """Downsample to 1 hour (original reports use 15m interval)"""
+    assert raw[raw['freq'] != '15m'].empty
 
     # The last generation report of the day has a timestamp that is
     # day+1 at 00:00 (each report contains data of the previous 15 minutes).
