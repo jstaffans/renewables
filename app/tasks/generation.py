@@ -54,11 +54,15 @@ def downsample(raw):
     raw['date'] = raw['timestamp_adjusted'].dt.date
     raw['hour'] = raw['timestamp_adjusted'].dt.hour
 
-    return raw\
+    data = raw\
         .groupby([lambda i: i // 4, 'fuel_name', 'date', 'hour'])\
         .agg({'gen_MW': np.mean})\
         .reset_index()\
         .drop(['level_0'], axis=1)
+
+    timestamps = data.apply(lambda x: pd.to_datetime(x['hour'], unit='h', origin=x['date']), axis=1)
+
+    return data.assign(timestamp=timestamps).drop(['date', 'hour'], axis=1)
 
 transform = compose(downsample, add_missing_megawatts, deduplicate)
 
