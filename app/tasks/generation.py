@@ -2,6 +2,7 @@ from functools import lru_cache
 from pyiso import client_factory
 from datetime import datetime, timedelta
 from funcy import compose, identity, retry
+from itertools import repeat
 from urllib.error import HTTPError
 import pandas as pd
 import numpy as np
@@ -64,7 +65,33 @@ def downsample(raw):
 
     return data.assign(timestamp=timestamps).drop(['date', 'hour'], axis=1)
 
-transform = compose(downsample, add_missing_megawatts, deduplicate)
+def pivot(df):
+    """Produce a tidy data set by pivoting each fuel_name into its own column"""
+    return df.pivot(index='timestamp', columns='fuel_name')
+
+def ratio(df):
+    """(Redundantly) calculate ratio of renewable vs non-renewable fuels"""
+    rows, _ = df.shape
+    zero = list(repeat(0, rows))
+    renewables = pd.DataFrame(
+        {'timestamp': df.index,
+         'wind': zero,
+         'solar': zero,
+         'hydro': zero,
+         'biomass': zero,
+        }).set_index('timestamp')
+    gen = df['gen_MW'].combine_first(renewables)
+
+    new = df.copy()
+    new['gen_MW', 'renewables'] = gen['wind'] + gen['solar'] + gen['biomass'] + gen['hydro']
+    new['gen_MW', 'non_renewables'] = new['gen_MW'].sum(axis=1) - 2*new['gen_MW', 'renewables']
+
+    return new
+
+def round(df):
+    return df.apply(np.round)
+
+transform = compose(round, ratio, pivot, downsample, add_missing_megawatts, deduplicate)
 
 def generation(ba_name='EU', control_area=None, start=None, end=None):
     raw = raw_generation(ba_name, control_area, start, end)
