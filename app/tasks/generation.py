@@ -7,7 +7,10 @@ from urllib.error import HTTPError
 import pandas as pd
 import numpy as np
 
-@retry(3, errors=HTTPError)
+from app.model import RENEWABLES, NON_RENEWABLES
+
+
+@retry(5, errors=HTTPError)
 @lru_cache()
 def raw_generation(ba_name, control_area, start, end):
     entso = client_factory(ba_name)
@@ -69,29 +72,49 @@ def pivot(df):
     """Produce a tidy data set by pivoting each fuel_name into its own column"""
     return df.pivot(index='timestamp', columns='fuel_name')
 
-def ratio(df):
-    """(Redundantly) calculate ratio of renewable vs non-renewable fuels"""
+def flatten(df):
+    return df['gen_MW']
+
+def normalise_fuels(df):
+    """
+    Restrict fuels to list of known fuels (add zero gen_MW if missing).
+    """
     rows, _ = df.shape
     zero = list(repeat(0, rows))
-    renewables = pd.DataFrame(
-        {'timestamp': df.index,
-         'wind': zero,
-         'solar': zero,
-         'hydro': zero,
-         'biomass': zero,
-        }).set_index('timestamp')
-    gen = df['gen_MW'].combine_first(renewables)
 
+    def zero_df(fuels):
+        d = {fuel: zero for fuel in fuels}
+        d['timestamp'] = df.index
+        return pd.DataFrame(d).set_index('timestamp')
+
+    renewables = zero_df(RENEWABLES)
+    non_renewables = zero_df(NON_RENEWABLES)
+
+    valid_columns = set(renewables.columns.tolist() + non_renewables.columns.tolist())
+    df_columns = set(df.columns.tolist())
+    normalised = df.drop(df_columns - valid_columns, axis=1, errors='ignore')
+    return normalised.combine_first(renewables).combine_first(non_renewables)
+
+def ratio(df):
+    """(Redundantly) calculate ratio of renewable vs non-renewable fuels"""
     new = df.copy()
-    new['gen_MW', 'renewables'] = gen['wind'] + gen['solar'] + gen['biomass'] + gen['hydro']
-    new['gen_MW', 'non_renewables'] = new['gen_MW'].sum(axis=1) - 2*new['gen_MW', 'renewables']
-
+    new['renewables'] = new['wind'] + new['solar'] + new['biomass'] + new['hydro']
+    new['non_renewables'] = new.sum(axis=1) - 2*new['renewables']
     return new
 
 def round(df):
     return df.apply(np.round)
 
-transform = compose(round, ratio, pivot, downsample, add_missing_megawatts, deduplicate)
+transform = compose(
+    round,
+    ratio,
+    normalise_fuels,
+    flatten,
+    pivot,
+    downsample,
+    add_missing_megawatts,
+    deduplicate,
+)
 
 def generation(ba_name='EU', control_area=None, start=None, end=None):
     raw = raw_generation(ba_name, control_area, start, end)

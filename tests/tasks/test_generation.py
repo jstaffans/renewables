@@ -22,6 +22,10 @@ def simple():
 def pivot():
     return _read_csv('generation_2018-01-02_pivot.csv')
 
+@pytest.fixture(scope='module')
+def weird_columns():
+    return _read_csv('generation_2018-01-02_weird_columns.csv')
+
 class TestGeneration(object):
 
     def test_deduplication(self):
@@ -55,10 +59,19 @@ class TestGeneration(object):
         rows, _ = transformed.shape
         assert rows == 24
 
+    def test_column_normalisation(self):
+        data = weird_columns()
+        transformed = generation.transform(data)
+        assert set(transformed.columns) == {
+            'wind', 'hydro', 'solar', 'biomass',
+            'coal', 'fossil', 'natgas', 'oil', 'other', 'refuse',
+            'renewables', 'non_renewables',
+        }
+
     def test_ratio(self):
         data = pivot()
         transformed = generation.transform(data)
-        assert transformed['gen_MW'].iloc[0]['renewables'] == 125
-        assert transformed['gen_MW'].iloc[0]['non_renewables'] == 100
-        assert transformed['gen_MW'].iloc[1]['renewables'] == 250
-        assert transformed['gen_MW'].iloc[1]['non_renewables'] == 200
+        assert transformed.iloc[0]['renewables'] == 125
+        assert transformed.iloc[0]['non_renewables'] == 100
+        assert transformed.iloc[1]['renewables'] == 250
+        assert transformed.iloc[1]['non_renewables'] == 200
