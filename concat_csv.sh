@@ -2,5 +2,5 @@
 
 for file in *.csv;
 do
-    awk 'NR > 3 {print $0;}' "$file"
+    awk 'NR > 1 {print $0;}' "$file"
 done
