@@ -6,3 +6,5 @@ pyiso==0.4.0
 funcy==1.10
 keras==2.1.3
 tensorflow==1.4.1
+Flask-Webpack==0.1.0
+Flask-Migrate==2.1.1
