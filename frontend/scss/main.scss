@@ -1,7 +1,32 @@
-$bg:   #333;
-$main: #eee;
+$bg:     #333;
+$main:   #F2F2F2;
+$accent: #27AE60;
+
+@import '~sass-rem';
+@import '~tachyons-sass/tachyons.scss';
 
 body {
   background: $bg;
   color: $main;
+  font-family: 'Nunito', sans-serif;
+  padding: rem(20px);
+}
+
+.container {
+  width: 100%;
+}
+
+@media #{$breakpoint-large} {
+  .container {
+    max-width: rem(920px);
+  }
+}
+
+h1, .h1 {
+  font-size: rem(56px);
+  font-weight: 600;
+}
+
+.accent {
+  color: $accent;
 }
