@@ -1,9 +1,32 @@
+@import '~sass-rem';
+@import '~tachyons-sass/tachyons.scss';
+
+// variables and classes to apply them
+
 $bg:     #333;
 $main:   #F2F2F2;
 $accent: #27AE60;
 
-@import '~sass-rem';
-@import '~tachyons-sass/tachyons.scss';
+.bg {
+  color: $bg;
+}
+
+.main {
+  color: $main;
+}
+
+.accent {
+  color: $accent;
+}
+
+
+// components
+
+@import 'components/typography';
+@import 'components/chart';
+
+
+// page layout
 
 body {
   background: $bg;
@@ -22,11 +45,3 @@ body {
   }
 }
 
-h1, .h1 {
-  font-size: rem(56px);
-  font-weight: 600;
-}
-
-.accent {
-  color: $accent;
-}

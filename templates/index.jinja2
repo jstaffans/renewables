@@ -1,3 +1,5 @@
+{% from 'macros.jinja2' import label %}
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -10,10 +12,19 @@
     {{ stylesheet_tag('main') | safe }}
   </head>
   <body>
+
     <div class="container center-l">
       <h1 class="tc">Berlin <span class="accent">Renewables</span></h1>
+      {# {{ label('24h ago') }} #}
+      <svg id="chart" class="chart" width="920" height="500"></svg>
     </div>
 
+    <script>
+      // some temporary testing data
+      var generationData = [0.609024,0.610106,0.604062,0.595785,0.586156,0.572461,0.555949,0.539961,0.520175,0.499054,0.47759,0.455587,0.428609,0.400047,0.375179,0.353181,0.332125,0.315488,0.298265,0.28276,0.270644,0.259217,0.249095,0.242276,0.23805,0.234499,0.230193];
+    </script>
+
     {{ javascript_tag('main') | safe }}
+
   </body>
 </html>
