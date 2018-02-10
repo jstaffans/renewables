@@ -5,9 +5,20 @@
     }
   }
 
-  path {
-    stroke: green;
-    stroke-width: 5;
+  .line {
+    stroke: darken($accent, 7%);
+    stroke-width: 7px;
+    fill: none;
+
+    &--predicted {
+      stroke-dasharray: 5,5;
+    }
+  }
+
+  .axis path {
+    stroke: darken($accent, 10%);
+    stroke-width: 22px;
+    stroke-dasharray: 5,5;
     fill: none;
   }
 }
