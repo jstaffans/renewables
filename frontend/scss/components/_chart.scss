@@ -1,5 +1,10 @@
 .chart {
   &__label {
+    circle {
+      stroke-width: 3px;
+      stroke: $accent;
+      fill: darken($bg, 5%);
+    }
     text {
       fill: $main;
     }
