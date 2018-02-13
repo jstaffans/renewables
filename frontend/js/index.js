@@ -8,47 +8,63 @@ function partitionData(data) {
   return [obs, pred];
 }
 
+function moveLabel(label, x, y) {
+  const labelDim = +label.attr('width');
+  label.attr('x', x - labelDim/2).attr('y', y - labelDim/2);
+}
+
 (global => {
   const data = global.generationData;
   const chart = d3.select('#chart');
   const width = +chart.attr('width');
   const height = +chart.attr('height');
 
-  const x = d3.scaleLinear().domain([0, data.length]).range([30, width - 30]);
-  const y = d3.scaleLinear().domain([0, 1]).range([height, 0]);
+  const plotX = d3.scaleLinear().domain([0, data.length]).range([30, width - 30]);
+  const plotY = d3.scaleLinear().domain([0, 1]).range([height, 0]);
 
-  const yAxis = d3.axisLeft(y);
+  const yAxis = d3.axisLeft(plotY);
   chart.append('svg:g')
-    .attr('class', 'axis axis--y')
+    .attr('class', 'chart__axis chart__axis--y')
     .call(yAxis);
 
-  const observed = d3.line().x((d, i) => x(i)).y(d => y(d)).curve(d3.curveLinear);
-  const predicted = d3.line().x((d, i) => x(i + 23) + 5).y(d => y(d)).curve(d3.curveLinear);
+  const observed = d3.line().x((d, i) => plotX(i)).y(d => plotY(d)).curve(d3.curveLinear);
+  const predicted = d3.line().x((d, i) => plotX(i + 23) + 5).y(d => plotY(d)).curve(d3.curveLinear);
 
   const [obs, pred] = partitionData(data);
 
-  chart.append('svg:path').attr('class', 'line').attr('d', observed(obs));
-  chart.append('svg:path').attr('class', 'line line--predicted').attr('d', predicted(pred));
+  chart.append('svg:path').attr('class', 'chart__line').attr('d', observed(obs));
+  chart.append('svg:path').attr('class', 'chart__line chart__line--predicted').attr('d', predicted(pred));
 
   // Labels, placed at arbitrarily chosen hours along the X axis.
   // Label is placed either above or below the plotted line,
   // depending on where there's more place.
 
   const labelNames = ['24h-ago', 'now', 'in-6h'];
-  const labelPositions = [2, 20, 26].map((hour, i) => {
+  const measurementPoints = [0, 23, 29];
+  const labelPositions = [2, 22, 26].map((hour, i) => {
     const jitter = 125 - Math.floor(Math.random() * 50);
     return {
-      hour,
+      hour: measurementPoints[i],
       name: labelNames[i],
-      x: x(hour),
+      x: plotX(hour),
       y: data[hour] < 0.5 ? jitter : height - jitter
     };
   });
 
-  labelPositions.forEach(({x, y, name}, i) => {
+  const connectLabel = (label, i, x1, y1) => {
+    const [x2, y2] = [plotX(i), plotY(data[i])]
+    chart.insert('line', ':first-child')
+      .attr('x1', x1)
+      .attr('y1', y1)
+      .attr('x2', x2)
+      .attr('y2', y2)
+      .attr('class', 'chart__label-connection');
+  }
+
+  labelPositions.forEach(({x, y, name, hour}) => {
     const label = chart.select(`[data-locator="${name}"]`);
-    const labelDim = +label.attr('width');
-    label.attr('x', x - labelDim/2).attr('y', y - labelDim/2);
+    moveLabel(label, x, y);
+    connectLabel(label, hour, x, y);
   });
 
   // TODO: draw connecting lines

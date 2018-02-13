@@ -9,7 +9,12 @@
     }
   }
 
-  .line {
+  &__label-connection {
+    stroke: $accent;
+    stroke-width: 3px;
+  }
+
+  &__line {
     stroke: darken($accent, 7%);
     stroke-width: 7px;
     fill: none;
@@ -19,7 +24,7 @@
     }
   }
 
-  .axis path {
+  &__axis path {
     stroke: darken($accent, 10%);
     stroke-width: 22px;
     stroke-dasharray: 5,5;
