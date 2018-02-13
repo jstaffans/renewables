@@ -30,19 +30,25 @@ function partitionData(data) {
   chart.append('svg:path').attr('class', 'line').attr('d', observed(obs));
   chart.append('svg:path').attr('class', 'line line--predicted').attr('d', predicted(pred));
 
-  // labels
+  // Labels, placed at arbitrarily chosen hours along the X axis.
+  // Label is placed either above or below the plotted line,
+  // depending on where there's more place.
 
-  const labelPositions = [2, 20, 26].map(i => {
-    const jitter = 125 - Math.floor(Math.random() * 50);
-    return [x(i), data[i] < 0.5 ? jitter : height - jitter];
-  });
   const labelNames = ['24h-ago', 'now', 'in-6h'];
+  const labelPositions = [2, 20, 26].map((hour, i) => {
+    const jitter = 125 - Math.floor(Math.random() * 50);
+    return {
+      hour,
+      name: labelNames[i],
+      x: x(hour),
+      y: data[hour] < 0.5 ? jitter : height - jitter
+    };
+  });
 
-  labelPositions.forEach(([labelX, labelY], i) => {
-    const labelName = labelNames[i];
-    const label = chart.select(`[data-locator="${labelName}"]`);
+  labelPositions.forEach(({x, y, name}, i) => {
+    const label = chart.select(`[data-locator="${name}"]`);
     const labelDim = +label.attr('width');
-    label.attr('x', labelX - labelDim/2).attr('y', labelY - labelDim/2);
+    label.attr('x', x - labelDim/2).attr('y', y - labelDim/2);
   });
 
   // TODO: draw connecting lines
