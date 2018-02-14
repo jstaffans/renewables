@@ -22,6 +22,11 @@
     &--predicted {
       stroke-dasharray: 5,5;
     }
+
+    &--mask {
+      stroke-width: 30px;
+      stroke: $bg;
+    }
   }
 
   &__axis path {

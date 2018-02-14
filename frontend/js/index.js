@@ -27,13 +27,14 @@ function moveLabel(label, x, y) {
     .attr('class', 'chart__axis chart__axis--y')
     .call(yAxis);
 
-  const observed = d3.line().x((d, i) => plotX(i)).y(d => plotY(d)).curve(d3.curveLinear);
-  const predicted = d3.line().x((d, i) => plotX(i + 23) + 5).y(d => plotY(d)).curve(d3.curveLinear);
-
   const [obs, pred] = partitionData(data);
+  const observed = d3.line().x((d, i) => plotX(i)).y(d => plotY(d)).curve(d3.curveLinear)(obs);
+  const predicted = d3.line().x((d, i) => plotX(i + 23) + 5).y(d => plotY(d)).curve(d3.curveLinear)(pred);
 
-  chart.append('svg:path').attr('class', 'chart__line').attr('d', observed(obs));
-  chart.append('svg:path').attr('class', 'chart__line chart__line--predicted').attr('d', predicted(pred));
+  chart.append('svg:path').attr('class', 'chart__line chart__line--mask').attr('d', observed);
+  chart.append('svg:path').attr('class', 'chart__line chart__line--mask').attr('d', predicted);
+  chart.append('svg:path').attr('class', 'chart__line').attr('d', observed);
+  chart.append('svg:path').attr('class', 'chart__line chart__line--predicted').attr('d', predicted);
 
   // Labels, placed at arbitrarily chosen hours along the X axis.
   // Label is placed either above or below the plotted line,
