@@ -1,5 +1,5 @@
 .chart {
-  &__label {
+  &__data-label {
     circle {
       stroke-width: 3px;
       stroke: $accent;
@@ -30,10 +30,15 @@
   }
 
   &__axis path {
-    stroke: darken($accent, 10%);
-    stroke-width: 22px;
-    stroke-dasharray: 5,5;
+    stroke: darken($main, 20%);
+    stroke-width: 12px;
+    stroke-dasharray: 5,7;
     fill: none;
+  }
+
+  &__axis-label {
+    font-size: rem(22px);
+    fill: $main;
   }
 }
 

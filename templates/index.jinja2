@@ -1,4 +1,4 @@
-{% from 'macros.jinja2' import label %}
+{% from 'macros.jinja2' import data_label %}
 
 <!doctype html>
 <html lang="en">
@@ -16,9 +16,9 @@
     <div class="container center-l">
       <h1 class="tc">Berlin <span class="accent">Renewables</span></h1>
       <svg id="chart" class="chart" width="920" height="500">
-        {{ label('24h ago') }}
-        {{ label('now') }}
-        {{ label('in 6h') }}
+        {{ data_label('24h ago') }}
+        {{ data_label('now') }}
+        {{ data_label('in 6h*') }}
       </svg>
     </div>
 

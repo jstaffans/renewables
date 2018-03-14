@@ -1,6 +1,8 @@
 import '../scss/main.scss';
 import * as d3 from 'd3';
 
+// Partitions data into observed and predicted parts.
+// They are to be styled differently.
 function partitionData(data) {
   const obs = data.slice(0, 24);
   const pred = data.slice(24);
@@ -19,13 +21,28 @@ function moveLabel(label, x, y) {
   const width = +chart.attr('width');
   const height = +chart.attr('height');
 
-  const plotX = d3.scaleLinear().domain([0, data.length]).range([30, width - 30]);
+  const plotX = d3.scaleLinear().domain([0, data.length]).range([60, width - 30]);
   const plotY = d3.scaleLinear().domain([0, 1]).range([height, 0]);
 
-  const yAxis = d3.axisLeft(plotY);
+  const yAxis = d3.axisLeft(plotY).ticks(0).tickSizeOuter(0);
   chart.append('svg:g')
     .attr('class', 'chart__axis chart__axis--y')
+    .attr('transform', 'translate(30, 28) scale(1.0 0.88)')
     .call(yAxis);
+
+  chart.append('svg:text')
+    .attr('class', 'chart__axis-label chart__axis-label--100')
+    .attr('y', 20)
+    .attr('x', 6)
+    .text('100 %');
+
+  chart.append('svg:text')
+    .attr('class', 'chart__axis-label chart__axis-label--0')
+    .attr('y', height)
+    .attr('x', 10)
+    .text('0 %');
+
+  chart.selectAll('.tick').remove();
 
   const [obs, pred] = partitionData(data);
   const observed = d3.line().x((d, i) => plotX(i)).y(d => plotY(d)).curve(d3.curveLinear)(obs);
@@ -39,6 +56,8 @@ function moveLabel(label, x, y) {
   // Labels, placed at arbitrarily chosen hours along the X axis.
   // Label is placed either above or below the plotted line,
   // depending on where there's more place.
+
+  // The label SVG:s are part of the markup.
 
   const labelNames = ['24h-ago', 'now', 'in-6h'];
   const measurementPoints = [0, 23, 29];
@@ -67,7 +86,4 @@ function moveLabel(label, x, y) {
     moveLabel(label, x, y);
     connectLabel(label, hour, x, y);
   });
-
-  // TODO: draw connecting lines
-
 })(window);
