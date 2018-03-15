@@ -10,6 +10,41 @@ function partitionData(data) {
   return [obs, pred];
 }
 
+// render the y axis, involves adding some custom labels.
+function renderYAxis(chart, plot) {
+  const height = +chart.attr('height');
+  
+  const axis = d3.axisLeft(plot).ticks(0).tickSizeOuter(0);
+
+  chart.append('svg:g')
+    .attr('class', 'chart__axis chart__axis--y')
+    .attr('transform', 'translate(30, 0)')
+    .call(axis);
+
+  const label100 = chart.append('svg:g').attr('class', 'chart__axis-label')
+
+  label100.append('svg:rect')
+    .attr('width', 50)
+    .attr('height', 28);
+
+  label100.append('svg:text')
+    .attr('y', 16)
+    .attr('x', 2)
+    .text('100 %');
+
+  const label0 = chart.append('svg:g').attr('class', 'chart__axis-label');
+
+  label0.append('svg:rect')
+    .attr('y', height-30)
+    .attr('width', 50)
+    .attr('height', 30);
+
+  label0.append('svg:text')
+    .attr('y', height-5)
+    .attr('x', 10)
+    .text('0 %');
+}
+
 function moveLabel(label, x, y) {
   const labelDim = +label.attr('width');
   label.attr('x', x - labelDim/2).attr('y', y - labelDim/2);
@@ -18,31 +53,11 @@ function moveLabel(label, x, y) {
 (global => {
   const data = global.generationData;
   const chart = d3.select('#chart');
-  const width = +chart.attr('width');
-  const height = +chart.attr('height');
 
-  const plotX = d3.scaleLinear().domain([0, data.length]).range([60, width - 30]);
-  const plotY = d3.scaleLinear().domain([0, 1]).range([height, 0]);
+  const plotX = d3.scaleLinear().domain([0, data.length]).range([60, chart.attr('width') - 30]);
+  const plotY = d3.scaleLinear().domain([0, 1]).range([chart.attr('height'), 0]);
 
-  const yAxis = d3.axisLeft(plotY).ticks(0).tickSizeOuter(0);
-  chart.append('svg:g')
-    .attr('class', 'chart__axis chart__axis--y')
-    .attr('transform', 'translate(30, 28) scale(1.0 0.88)')
-    .call(yAxis);
-
-  chart.append('svg:text')
-    .attr('class', 'chart__axis-label chart__axis-label--100')
-    .attr('y', 20)
-    .attr('x', 6)
-    .text('100 %');
-
-  chart.append('svg:text')
-    .attr('class', 'chart__axis-label chart__axis-label--0')
-    .attr('y', height)
-    .attr('x', 10)
-    .text('0 %');
-
-  chart.selectAll('.tick').remove();
+  renderYAxis(chart, plotY);
 
   const [obs, pred] = partitionData(data);
   const observed = d3.line().x((d, i) => plotX(i)).y(d => plotY(d)).curve(d3.curveLinear)(obs);
@@ -67,7 +82,7 @@ function moveLabel(label, x, y) {
       hour: measurementPoints[i],
       name: labelNames[i],
       x: plotX(hour),
-      y: data[hour] < 0.5 ? jitter : height - jitter
+      y: data[hour] < 0.5 ? jitter : chart.attr('height') - jitter
     };
   });
 

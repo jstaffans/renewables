@@ -37,8 +37,15 @@
   }
 
   &__axis-label {
-    font-size: rem(22px);
-    fill: $main;
+
+    rect {
+      fill: $bg;
+    }
+
+    text {
+      font-size: rem(22px);
+      fill: $main;
+    }
   }
 }
 
