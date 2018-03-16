@@ -17,11 +17,11 @@ function renderYAxis(chart, plot) {
   const axis = d3.axisLeft(plot).ticks(0).tickSizeOuter(0);
 
   chart.append('svg:g')
-    .attr('class', 'chart__axis chart__axis--y')
+    .attr('class', 'generation-chart__axis')
     .attr('transform', 'translate(30, 0)')
     .call(axis);
 
-  const label100 = chart.append('svg:g').attr('class', 'chart__axis-label')
+  const label100 = chart.append('svg:g').attr('class', 'generation-chart__axis-label')
 
   label100.append('svg:rect')
     .attr('width', 50)
@@ -32,7 +32,7 @@ function renderYAxis(chart, plot) {
     .attr('x', 2)
     .text('100 %');
 
-  const label0 = chart.append('svg:g').attr('class', 'chart__axis-label');
+  const label0 = chart.append('svg:g').attr('class', 'generation-chart__axis-label');
 
   label0.append('svg:rect')
     .attr('y', height-30)
@@ -52,7 +52,7 @@ function moveLabel(label, x, y) {
 
 (global => {
   const data = global.generationData;
-  const chart = d3.select('#chart');
+  const chart = d3.select('.generation-chart');
 
   const plotX = d3.scaleLinear().domain([0, data.length]).range([60, chart.attr('width') - 30]);
   const plotY = d3.scaleLinear().domain([0, 1]).range([chart.attr('height'), 0]);
@@ -63,10 +63,10 @@ function moveLabel(label, x, y) {
   const observed = d3.line().x((d, i) => plotX(i)).y(d => plotY(d)).curve(d3.curveLinear)(obs);
   const predicted = d3.line().x((d, i) => plotX(i + 23) + 5).y(d => plotY(d)).curve(d3.curveLinear)(pred);
 
-  chart.append('svg:path').attr('class', 'chart__line chart__line--mask').attr('d', observed);
-  chart.append('svg:path').attr('class', 'chart__line chart__line--mask').attr('d', predicted);
-  chart.append('svg:path').attr('class', 'chart__line').attr('d', observed);
-  chart.append('svg:path').attr('class', 'chart__line chart__line--predicted').attr('d', predicted);
+  chart.append('svg:path').attr('class', 'generation-chart__line generation-chart__line--mask').attr('d', observed);
+  chart.append('svg:path').attr('class', 'generation-chart__line generation-chart__line--mask').attr('d', predicted);
+  chart.append('svg:path').attr('class', 'generation-chart__line').attr('d', observed);
+  chart.append('svg:path').attr('class', 'generation-chart__line generation-chart__line--predicted').attr('d', predicted);
 
   // Labels, placed at arbitrarily chosen hours along the X axis.
   // Label is placed either above or below the plotted line,
@@ -93,7 +93,7 @@ function moveLabel(label, x, y) {
       .attr('y1', y1)
       .attr('x2', x2)
       .attr('y2', y2)
-      .attr('class', 'chart__label-connection');
+      .attr('class', 'generation-chart__label-connection');
   }
 
   labelPositions.forEach(({x, y, name, hour}) => {
