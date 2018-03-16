@@ -20,6 +20,28 @@
         {{ data_label('now') }}
         {{ data_label('in 6h*') }}
       </svg>
+
+      <table class="generation-table">
+        <thead>
+          <tr>
+            <th>Generation</th>
+            <th>Now</th>
+            <th>In 6h*</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Non-renewables</td>
+            <td>1000 MW</td>
+            <td>1200 MW</td>
+          </tr>
+          <tr class="generation-table__row--renewables">
+            <td>Renewables</td>
+            <td>1000 MW (50 %)</td>
+            <td>1200 MW (50 %)</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <script>
