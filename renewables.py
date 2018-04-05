@@ -19,6 +19,7 @@ def create_app(settings_override=None):
         'DEBUG': True,
         'WEBPACK_MANIFEST_PATH': './build/manifest.json',
         'SQLALCHEMY_DATABASE_URI': 'sqlite:///renewables.db',
+        'SQLALCHEMY_TRACK_MODIFICATIONS': False,
     }
 
     app.config.update(params)
