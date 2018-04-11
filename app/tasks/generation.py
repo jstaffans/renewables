@@ -46,7 +46,7 @@ def _group_without_missing_data(group):
     return pd.concat([df_for_timestamp(t) for t in series], ignore_index=True)
 
 def downsample(raw):
-    """Downsample to 1 hour (original reports use 15m interval)"""
+    """Downsample to 1 hour (original reports use 15m interval)."""
     assert raw[raw['freq'] != '15m'].empty
 
     # The last generation report of the day has a timestamp that is
@@ -69,16 +69,14 @@ def downsample(raw):
     return data.assign(timestamp=timestamps).drop(['date', 'hour'], axis=1)
 
 def pivot(df):
-    """Produce a tidy data set by pivoting each fuel_name into its own column"""
+    """Produce a tidy data set by pivoting each fuel_name into its own column."""
     return df.pivot(index='timestamp', columns='fuel_name')
 
 def flatten(df):
     return df['gen_MW']
 
 def normalise_fuels(df):
-    """
-    Restrict fuels to list of known fuels (add zero gen_MW if missing).
-    """
+    """Restrict fuels to list of known fuels (add zero gen_MW if missing)."""
     rows, _ = df.shape
     zero = list(repeat(0, rows))
 
@@ -96,13 +94,17 @@ def normalise_fuels(df):
     return normalised.combine_first(renewables).combine_first(non_renewables)
 
 def ratio(df):
-    """(Redundantly) calculate ratio of renewable vs non-renewable fuels"""
+    """
+    Sum together renewable and non-renewable fuel types.
+    This is somewhat redundant since the individual fuel types are also returned.
+    """
     new = df.copy()
     new['renewables'] = new['wind'] + new['solar'] + new['biomass'] + new['hydro']
     new['non_renewables'] = new.sum(axis=1) - 2*new['renewables']
     return new
 
 def round(df):
+    """Let's only work with whole numbers (MW)."""
     return df.apply(np.round)
 
 transform = compose(
@@ -117,6 +119,9 @@ transform = compose(
 )
 
 def generation(ba_name='EU', control_area=None, start=None, end=None):
+    """
+    Returns a per-hour generation report as a Pandas DataFrame.
+    """
     raw = raw_generation(ba_name, control_area, start, end)
     raw['timestamp'] = pd.to_datetime(raw['timestamp'])
     return transform(raw)

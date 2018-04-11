@@ -3,28 +3,28 @@ import pytest
 import pandas as pd
 from dateutil.parser import parse
 from app.tasks import generation
+from app.model import csv_to_pd
 
-def _read_csv(filename):
-    data = pd.read_csv(os.path.join(os.path.dirname(__file__), filename),
-                       parse_dates=True)
+def _raw_entso_report(csv_filename):
+    data = pd.read_csv(os.path.join(os.path.dirname(__file__), csv_filename), parse_dates=True)
     data['timestamp'] = pd.to_datetime(data['timestamp'])
     return data
 
 @pytest.fixture(scope='module')
 def dedup():
-    return _read_csv('generation_2018-01-02_dedup.csv')
+    return _raw_entso_report('generation_2018-01-02_dedup.csv')
 
 @pytest.fixture(scope='module')
 def simple():
-    return _read_csv('generation_2018-01-02_small.csv')
+    return _raw_entso_report('generation_2018-01-02_small.csv')
 
 @pytest.fixture(scope='module')
 def pivot():
-    return _read_csv('generation_2018-01-02_pivot.csv')
+    return _raw_entso_report('generation_2018-01-02_pivot.csv')
 
 @pytest.fixture(scope='module')
 def weird_columns():
-    return _read_csv('generation_2018-01-02_weird_columns.csv')
+    return _raw_entso_report('generation_2018-01-02_weird_columns.csv')
 
 class TestGeneration(object):
 

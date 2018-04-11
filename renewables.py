@@ -6,34 +6,14 @@ from datetime import datetime, timedelta
 from flask import Flask, render_template
 from flask_webpack import Webpack
 
-from app.db import db, migrate
+from app import create_app
 from app.tasks.generation import generation as generation_task
 
 
-webpack = Webpack()
-
-def create_app(settings_override=None):
-    app = Flask(__name__)
-
-    params = {
-        'DEBUG': True,
-        'WEBPACK_MANIFEST_PATH': './build/manifest.json',
-        'SQLALCHEMY_DATABASE_URI': 'sqlite:///renewables.db',
-        'SQLALCHEMY_TRACK_MODIFICATIONS': False,
-    }
-
-    app.config.update(params)
-
-    if settings_override:
-        app.config.update(settings_override)
-
-    db.init_app(app)
-    migrate.init_app(app, db)
-    webpack.init_app(app)
-
-    return app
-
 app = create_app()
+
+webpack = Webpack()
+webpack.init_app(app)
 
 @app.route('/')
 def index():
