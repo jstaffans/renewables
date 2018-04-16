@@ -15,13 +15,8 @@ def single_reading():
 
 class TestModel(TestCase):
 
-    settings_override = {
-        'SQLALCHEMY_DATABASE_URI': 'sqlite:///../test_renewables.db',
-        'TESTING': True,
-    }
-
     def create_app(self):
-        return create_app(self.settings_override)
+        return create_app('app.TestingConfig')
 
     def test_report_insertion(self):
         report = single_reading()
