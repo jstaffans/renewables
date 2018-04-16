@@ -7,6 +7,7 @@ from flask import Flask, render_template
 from flask_webpack import Webpack
 
 from app import create_app
+from app.model import csv_to_pd, insert_generation_report
 from app.tasks.generation import generation as generation_task
 
 
@@ -29,37 +30,52 @@ def _parse_date(d):
     return date
 
 @app.cli.command()
-@click.argument('control_area')
+@click.option('--control_area', default='DE(50HzT)')
 @click.option('--date', default='{:%Y-%m-%d}'.format(datetime.now() - timedelta(days=1)))
-def generation(control_area, date):
+@click.option('--output_dir', default='.')
+def generation(control_area, date, output_dir):
+    """
+    Writes a generation report for a single day to a CSV file in the given directory.
+    """
     start = _parse_date(date)
     end = start + timedelta(days=1)
-    result = generation_task(ba_name='EU', control_area=control_area, start=start, end=end)
-    filename = 'generation_{:%Y-%m-%d}.csv'.format(start)
+    result = generation_task(app.config['BA_NAME'], control_area, start, end)
+    filename = f'{output_dir}/generation_{start:%Y-%m-%d}.csv'
     result.to_csv(filename)
-    print('Wrote {}'.format(filename))
+    print(f'Wrote {filename}')
 
 @app.cli.command()
-@click.argument('control_area')
+@click.option('--control_area', default='DE(50HzT)')
 @click.option('--start_date', default='{:%Y-%m-%d}'.format(datetime.now() - timedelta(days=1)))
 @click.option('--days', default=1)
 @click.option('--output_dir', default='.')
 def generation_range(control_area, start_date, days, output_dir):
+    """
+    Outputs generation reports for a date range, one CSV report per day, to the given directory.
+    """
     start = _parse_date(start_date)
 
     for i in range(days):
         current = start + timedelta(days=i)
         end = current + timedelta(days=1)
-        filename = '{}/generation_{:%Y-%m-%d}.csv'.format(output_dir, current)
+        filename = f'{output_dir}/generation_{current:%Y-%m-%d}.csv'
 
         if os.path.isfile(filename):
-            print('{} already exists, skipping'.format(filename))
+            print(f'{filename} already exists, skipping')
             continue
 
-        result = generation_task(ba_name='EU', control_area=control_area, start=current, end=end)
+        result = generation_task(app.config['BA_NAME'], control_area, current, end)
         result.to_csv(filename)
+        print(f'Wrote {filename}')
 
-        print('Wrote {}'.format(filename))
+@app.cli.command()
+@click.option('--control_area', default='DE(50HzT)')
+@click.argument('input', type=click.File('rb'))
+def load_generation_report(control_area, input):
+    data = csv_to_pd(input)
+    insert_generation_report(app.config['BA_NAME'], control_area, data)
+    print(f'Inserted {data.count()} rows')
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8000)

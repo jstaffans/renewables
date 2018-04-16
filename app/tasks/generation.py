@@ -118,7 +118,7 @@ transform = compose(
     deduplicate,
 )
 
-def generation(ba_name='EU', control_area=None, start=None, end=None):
+def generation(ba_name, control_area, start, end):
     """
     Returns a per-hour generation report as a Pandas DataFrame.
     """
