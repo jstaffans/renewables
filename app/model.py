@@ -6,9 +6,7 @@ from app import db
 
 def csv_to_pd(filename):
     """Reads a generation report from a CSV file, returns a Pandas DataFrame."""
-    data = pd.read_csv(filename, parse_dates=True, index_col='timestamp')
-    # data['timestamp'] = pd.to_datetime(data['timestamp'])
-    return data
+    return pd.read_csv(filename, parse_dates=True, index_col='timestamp')
 
 # ENTSO-E mappings
 RENEWABLES = ['wind', 'hydro', 'solar', 'biomass']
