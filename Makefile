@@ -10,3 +10,6 @@ check-env:
 ifndef VIRTUAL_ENV
   $(error Not running in virtual environment)
 endif
+
+notebook: check-env
+	jupyter notebook --notebook-dir=notebooks/
