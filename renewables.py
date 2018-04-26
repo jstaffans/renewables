@@ -9,6 +9,7 @@ from flask_webpack import Webpack
 from app import create_app
 from app.model import csv_to_pd, insert_generation_report
 from app.tasks.generation import generation as generation_task
+from app.tasks.sun import sun_calendar as sun_calendar_task
 
 
 app = create_app()
@@ -67,6 +68,23 @@ def generation_range(control_area, start_date, days, output_dir):
         result = generation_task(app.config['BA_NAME'], control_area, current, end)
         result.to_csv(filename)
         print(f'Wrote {filename}')
+
+@app.cli.command()
+@click.option('--city_name', default='Berlin')
+@click.option('--start_date', default='{:%Y-%m-%d}'.format(datetime.now() - timedelta(days=1)))
+@click.option('--days', default=1)
+@click.option('--output_dir', default='.')
+def environment_range(city_name, start_date, days, output_dir):
+    """
+    Produces a CSV file with environmental factors like weather, sunset and sundown
+    in the given output directory.
+    """
+    start = _parse_date(start_date)
+    end = start + timedelta(days=days)
+    filename = f'{output_dir}/environment_{start:%Y-%m-%d}-{end:%Y-%m-%d}.csv'
+    result = sun_calendar_task(city_name, start, end)
+    result.to_csv(filename)
+    print(f'Wrote {filename}')
 
 @app.cli.command()
 @click.option('--control_area', default='DE(50HzT)')
