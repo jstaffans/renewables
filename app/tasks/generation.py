@@ -99,7 +99,8 @@ def ratio(df):
     This is somewhat redundant since the individual fuel types are also returned.
     """
     new = df.copy()
-    new['renewables'] = new['wind'] + new['solar'] + new['biomass'] + new['hydro']
+
+    new['renewables'] = sum([new[fuel_type] for fuel_type in RENEWABLES])
     new['non_renewables'] = new.sum(axis=1) - 2*new['renewables']
     return new
 
