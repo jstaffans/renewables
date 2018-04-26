@@ -33,4 +33,4 @@ def sun_calendar(city_name, start, end):
         records += [[t, _is_sun_up(sunrise, sunset, t)] for t in _hour_range(d)]
         d = d + timedelta(days=1)
 
-    return pd.DataFrame.from_records(records, columns=['timestamp', 'sun'])
+    return pd.DataFrame.from_records(records, columns=['timestamp', 'sun']).set_index('timestamp')
