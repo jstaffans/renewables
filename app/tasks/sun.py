@@ -24,7 +24,6 @@ def sun_calendar(city_name, start, end):
 
     a = Astral()
     city = a[city_name]
-    # d = start.replace(tzinfo=city.tz)
     d = start
     records = []
     while d < end:
