@@ -1,0 +1,35 @@
+{
+    "hourly": {
+        "data": [
+            {
+                "time": 1498860000,
+                "summary": "Mostly Cloudy",
+                "icon": "partly-cloudy-night",
+                "precipType": "rain",
+                "temperature": 15.03,
+                "apparentTemperature": 15.03,
+                "dewPoint": 12.78,
+                "humidity": 0.86,
+                "pressure": 1004.14,
+                "windSpeed": 2.29,
+                "windBearing": 235,
+                "cloudCover": 0.88,
+                "visibility": 10.73
+            },
+            {
+                "time": 1498863600,
+                "summary": "Overcast",
+                "icon": "cloudy",
+                "precipType": "rain",
+                "temperature": 14.69,
+                "apparentTemperature": 14.69,
+                "dewPoint": 13.33,
+                "humidity": 0.92,
+                "pressure": 1004.18,
+                "windSpeed": 1.71,
+                "windBearing": 217,
+                "visibility": 9.99
+            }
+        ]
+    }
+}

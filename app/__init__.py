@@ -13,6 +13,7 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = 'sqlite://:memory:'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     BA_NAME = 'EU'
+    WEATHER_API_TOKEN = os.environ.get('WEATHER_API_TOKEN')
 
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'sqlite:////var/sqlite/renewables.db'
