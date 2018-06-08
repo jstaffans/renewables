@@ -5,17 +5,17 @@ from app import db
 
 
 # ENTSO-E mappings
-RENEWABLES = ['wind', 'hydro', 'solar', 'biomass']
-NON_RENEWABLES = ['coal', 'fossil', 'natgas', 'oil', 'other', 'refuse']
+RENEWABLES = ["wind", "hydro", "solar", "biomass"]
+NON_RENEWABLES = ["coal", "fossil", "natgas", "oil", "other", "refuse"]
 
 
 def csv_to_pd(filename):
     """Reads a generation report from a CSV file, returns a Pandas DataFrame."""
-    return pd.read_csv(filename, parse_dates=True, index_col='timestamp')
+    return pd.read_csv(filename, parse_dates=True, index_col="timestamp")
 
 
 class GenerationReport(db.Model):
-    __table_args__ = {'info': {'without_rowid': True}}
+    __table_args__ = {"info": {"without_rowid": True}}
     ba_name = db.Column(db.String, primary_key=True)
     control_area = db.Column(db.String, primary_key=True)
     timestamp = db.Column(db.DateTime, primary_key=True)
@@ -30,30 +30,31 @@ class GenerationReport(db.Model):
         assert isinstance(report, pd.DataFrame)
 
         rows = []
-        dict_report = report.to_dict('index')
+        dict_report = report.to_dict("index")
         for k, v in dict_report.items():
             row = {}
-            row['ba_name'] = ba_name
-            row['control_area'] = control_area
-            row['timestamp'] = k.to_pydatetime()
-            row['renewables'] = v['renewables']
-            row['non_renewables'] = v['non_renewables']
+            row["ba_name"] = ba_name
+            row["control_area"] = control_area
+            row["timestamp"] = k.to_pydatetime()
+            row["renewables"] = v["renewables"]
+            row["non_renewables"] = v["non_renewables"]
             rows.append(row)
 
         db.engine.execute(GenerationReport.__table__.insert(), rows)
 
     def __repr__(self):
-        timestamp = f'timestamp=\'{self.timestamp:%Y-%m-%d %H:%M}\''
-        renewables = f'renewables={self.renewables:.2f}'
-        non_renewables = f'non_renewables={self.non_renewables:.2f}'
-        return f'<GenerationReport {timestamp} {renewables} {non_renewables}>'
+        timestamp = f"timestamp='{self.timestamp:%Y-%m-%d %H:%M}'"
+        renewables = f"renewables={self.renewables:.2f}"
+        non_renewables = f"non_renewables={self.non_renewables:.2f}"
+        return f"<GenerationReport {timestamp} {renewables} {non_renewables}>"
 
 
 class WeatherForecast(db.Model):
     """
     Forecast at timestamp t for timestamp t+1 hour.
     """
-    __table_args__ = {'info': {'without_rowid': True}}
+
+    __table_args__ = {"info": {"without_rowid": True}}
     city_name = db.Column(db.String, primary_key=True)
     timestamp = db.Column(db.DateTime, primary_key=True)
     wind_speed = db.Column(db.Float, nullable=False)
@@ -62,7 +63,7 @@ class WeatherForecast(db.Model):
     pressure = db.Column(db.Float, nullable=False)
 
     def __repr__(self):
-        timestamp = f'timestamp=\'{self.timestamp:%Y-%m-%d %H:%M}\''
-        city_name = f'city_name=\'{self.city_name}\''
-        temperature = f'temperature={self.temperature:.1f}'
-        return f'<GenerationReport {timestamp} {city_name} {temperature}>'
+        timestamp = f"timestamp='{self.timestamp:%Y-%m-%d %H:%M}'"
+        city_name = f"city_name='{self.city_name}'"
+        temperature = f"temperature={self.temperature:.1f}"
+        return f"<GenerationReport {timestamp} {city_name} {temperature}>"

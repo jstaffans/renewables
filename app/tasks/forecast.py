@@ -9,7 +9,9 @@ def check_historical_data_present():
     when the generation forecast is done. This task checks if
     we have up-to-date data in the database.
     """
-    weather_forecast_reports = WeatherForecast.query.filter(WeatherForecast.timestamp >= datetime.now() - timedelta(days=2)).all()
+    weather_forecast_reports = WeatherForecast.query.filter(
+        WeatherForecast.timestamp >= datetime.now() - timedelta(days=2)
+    ).all()
 
     # TODO
 

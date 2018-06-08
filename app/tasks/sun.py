@@ -5,9 +5,11 @@ from astral import Astral
 from app.util import hour_range
 from scipy.signal import savgol_filter
 
+
 def _is_sun_up(sunrise, sunset, t):
-    t_utc = pytz.timezone('UTC').localize(t)
+    t_utc = pytz.timezone("UTC").localize(t)
     return 1 if sunrise < t_utc < sunset else 0
+
 
 def sun_calendar(city_name, start, end):
     """
@@ -31,4 +33,6 @@ def sun_calendar(city_name, start, end):
     for i, r in enumerate(records):
         records[i][1] = smoothed[i] if smoothed[i] >= 0 else 0
 
-    return pd.DataFrame.from_records(records, columns=['timestamp', 'sun']).set_index('timestamp')
+    return pd.DataFrame.from_records(records, columns=["timestamp", "sun"]).set_index(
+        "timestamp"
+    )

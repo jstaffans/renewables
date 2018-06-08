@@ -8,23 +8,31 @@ from funcy import retry
 from urllib.error import HTTPError
 from app.util import hour_range
 
+
 @retry(5, errors=HTTPError)
 def _raw_weather(api_token, lat, lon, date):
     d = date.replace(microsecond=0).isoformat()
-    r = requests.get(f'https://api.darksky.net/forecast/{api_token}/{lat},{lon},{d}?units=si')
+    r = requests.get(
+        f"https://api.darksky.net/forecast/{api_token}/{lat},{lon},{d}?units=si"
+    )
     return r.json()
+
 
 def _as_dataframe(data, date):
     timestamps = list(hour_range(date))
-    hourly = data['hourly']['data']
-    keys = ['cloudCover', 'temperature', 'windSpeed', 'pressure']
+    hourly = data["hourly"]["data"]
+    keys = ["cloudCover", "temperature", "windSpeed", "pressure"]
     weather = [[d.get(k) for k in keys] for d in hourly]
-    df1 = pd.DataFrame(timestamps, columns=['timestamp'])
-    df2 = pd.DataFrame(weather, columns=['cloud_cover', 'temperature', 'wind_speed', 'pressure'])
-    return pd.concat([df1, df2], axis=1).set_index('timestamp')
+    df1 = pd.DataFrame(timestamps, columns=["timestamp"])
+    df2 = pd.DataFrame(
+        weather, columns=["cloud_cover", "temperature", "wind_speed", "pressure"]
+    )
+    return pd.concat([df1, df2], axis=1).set_index("timestamp")
+
 
 def _tidy(df):
-    return df.fillna(value=np.NaN).fillna(method='ffill')
+    return df.fillna(value=np.NaN).fillna(method="ffill")
+
 
 def weather(api_token, city_name, start, end):
     """

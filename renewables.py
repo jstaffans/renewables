@@ -18,11 +18,14 @@ app = create_app()
 webpack = Webpack()
 webpack.init_app(app)
 
-@app.route('/')
+
+@app.route("/")
 def index():
-    return render_template('index.jinja2')
+    return render_template("index.jinja2")
+
 
 # Management commands, mainly for reading batches of generation data from the API
+
 
 def _parse_date(d):
     try:
@@ -31,26 +34,32 @@ def _parse_date(d):
         raise click.BadParameter("Couldn't parse date.", param=d)
     return date
 
+
 @app.cli.command()
-@click.option('--control_area', default='DE(50HzT)')
-@click.option('--date', default='{:%Y-%m-%d}'.format(datetime.now() - timedelta(days=1)))
-@click.option('--output_dir', default='.')
+@click.option("--control_area", default="DE(50HzT)")
+@click.option(
+    "--date", default="{:%Y-%m-%d}".format(datetime.now() - timedelta(days=1))
+)
+@click.option("--output_dir", default=".")
 def generation(control_area, date, output_dir):
     """
     Writes a generation report for a single day to a CSV file in the given directory.
     """
     start = _parse_date(date)
     end = start + timedelta(days=1)
-    result = generation_task(app.config['BA_NAME'], control_area, start, end)
-    filename = f'{output_dir}/generation_{start:%Y-%m-%d}.csv'
+    result = generation_task(app.config["BA_NAME"], control_area, start, end)
+    filename = f"{output_dir}/generation_{start:%Y-%m-%d}.csv"
     result.to_csv(filename)
-    print(f'Wrote {filename}')
+    print(f"Wrote {filename}")
+
 
 @app.cli.command()
-@click.option('--control_area', default='DE(50HzT)')
-@click.option('--start_date', default='{:%Y-%m-%d}'.format(datetime.now() - timedelta(days=1)))
-@click.option('--days', default=1)
-@click.option('--output_dir', default='.')
+@click.option("--control_area", default="DE(50HzT)")
+@click.option(
+    "--start_date", default="{:%Y-%m-%d}".format(datetime.now() - timedelta(days=1))
+)
+@click.option("--days", default=1)
+@click.option("--output_dir", default=".")
 def generation_range(control_area, start_date, days, output_dir):
     """
     Outputs generation reports for a date range, one CSV report per day, to the given directory.
@@ -60,21 +69,24 @@ def generation_range(control_area, start_date, days, output_dir):
     for i in range(days):
         current = start + timedelta(days=i)
         end = current + timedelta(days=1)
-        filename = f'{output_dir}/generation_{current:%Y-%m-%d}.csv'
+        filename = f"{output_dir}/generation_{current:%Y-%m-%d}.csv"
 
         if os.path.isfile(filename):
-            print(f'{filename} already exists, skipping')
+            print(f"{filename} already exists, skipping")
             continue
 
-        result = generation_task(app.config['BA_NAME'], control_area, current, end)
+        result = generation_task(app.config["BA_NAME"], control_area, current, end)
         result.to_csv(filename)
-        print(f'Wrote {filename}')
+        print(f"Wrote {filename}")
+
 
 @app.cli.command()
-@click.option('--city_name', default='Berlin')
-@click.option('--start_date', default='{:%Y-%m-%d}'.format(datetime.now() - timedelta(days=1)))
-@click.option('--days', default=1)
-@click.option('--output_dir', default='.')
+@click.option("--city_name", default="Berlin")
+@click.option(
+    "--start_date", default="{:%Y-%m-%d}".format(datetime.now() - timedelta(days=1))
+)
+@click.option("--days", default=1)
+@click.option("--output_dir", default=".")
 def environment_range(city_name, start_date, days, output_dir):
     """
     Produces a CSV file with environmental factors like weather, sunset and sundown
@@ -82,20 +94,21 @@ def environment_range(city_name, start_date, days, output_dir):
     """
     start = _parse_date(start_date)
     end = start + timedelta(days=days)
-    filename = f'{output_dir}/environment_{start:%Y-%m-%d}-{end:%Y-%m-%d}.csv'
+    filename = f"{output_dir}/environment_{start:%Y-%m-%d}-{end:%Y-%m-%d}.csv"
     sun = sun_calendar_task(city_name, start, end)
-    weather = weather_task(app.config['WEATHER_API_TOKEN'], city_name, start, end)
+    weather = weather_task(app.config["WEATHER_API_TOKEN"], city_name, start, end)
     pd.concat([sun, weather], axis=1).to_csv(filename)
-    print(f'Wrote {filename}')
+    print(f"Wrote {filename}")
+
 
 @app.cli.command()
-@click.option('--control_area', default='DE(50HzT)')
-@click.argument('input', type=click.File('rb'))
+@click.option("--control_area", default="DE(50HzT)")
+@click.argument("input", type=click.File("rb"))
 def load_generation_report(control_area, input):
     data = csv_to_pd(input)
-    GenerationReport.insert(app.config['BA_NAME'], control_area, data)
-    print(f'Inserted {data.count()} rows')
+    GenerationReport.insert(app.config["BA_NAME"], control_area, data)
+    print(f"Inserted {data.count()} rows")
 
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8000)
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=8000)
