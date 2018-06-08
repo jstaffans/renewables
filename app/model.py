@@ -64,5 +64,5 @@ class WeatherForecast(db.Model):
     def __repr__(self):
         timestamp = f'timestamp=\'{self.timestamp:%Y-%m-%d %H:%M}\''
         city_name = f'city_name=\'{self.city_name}\''
-        temperature = f'temperature={self.temperature:.2f}'
+        temperature = f'temperature={self.temperature:.1f}'
         return f'<GenerationReport {timestamp} {city_name} {temperature}>'
