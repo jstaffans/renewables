@@ -31,4 +31,4 @@ class TestSun(object):
         start = datetime(2018, 4, 25, 21, 53, 0)
         calendar = sun.sun_calendar('Berlin', start, start + timedelta(days=1))
         assert calendar.iloc[0]['sun'] == 0
-        assert calendar.iloc[11]['sun'] == 1
+        assert calendar.iloc[11]['sun'] > 0.999

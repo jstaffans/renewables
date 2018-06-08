@@ -29,6 +29,6 @@ def sun_calendar(city_name, start, end):
     # smooth out transition between night and day to give model a chance to react
     smoothed = savgol_filter([r[1] for r in records], 5, 1)
     for i, r in enumerate(records):
-        records[i][1] = smoothed[i]
+        records[i][1] = smoothed[i] if smoothed[i] >= 0 else 0
 
     return pd.DataFrame.from_records(records, columns=['timestamp', 'sun']).set_index('timestamp')
