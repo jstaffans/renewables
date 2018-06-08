@@ -4,7 +4,7 @@ import pandas as pd
 from flask.ext.testing import TestCase
 
 from app import create_app, db
-from app.model import csv_to_pd, insert_generation_report, GenerationReport
+from app.model import csv_to_pd, GenerationReport
 
 def _csv(filename):
    return os.path.join(os.path.dirname(__file__), filename)
@@ -20,7 +20,7 @@ class TestModel(TestCase):
 
     def test_report_insertion(self):
         report = single_reading()
-        insert_generation_report('EU', 'TEST_CA', report)
+        GenerationReport.insert('EU', 'TEST_CA', report)
         db_reports = GenerationReport.query.all()
         assert len(db_reports) == 1
         assert db_reports[0].renewables == 12266.0

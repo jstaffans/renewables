@@ -7,7 +7,7 @@ from flask import Flask, render_template
 from flask_webpack import Webpack
 
 from app import create_app
-from app.model import csv_to_pd, insert_generation_report
+from app.model import csv_to_pd, GenerationReport
 from app.tasks.generation import generation as generation_task
 from app.tasks.sun import sun_calendar as sun_calendar_task
 from app.tasks.weather import weather as weather_task
@@ -93,7 +93,7 @@ def environment_range(city_name, start_date, days, output_dir):
 @click.argument('input', type=click.File('rb'))
 def load_generation_report(control_area, input):
     data = csv_to_pd(input)
-    insert_generation_report(app.config['BA_NAME'], control_area, data)
+    GenerationReport.insert(app.config['BA_NAME'], control_area, data)
     print(f'Inserted {data.count()} rows')
 
 
