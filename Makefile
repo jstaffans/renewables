@@ -11,7 +11,7 @@ ifndef VIRTUAL_ENV
   $(error Not running in virtual environment)
 endif
 
-blacken: check-env
+pretty: check-env
 	black renewables.py app
 
 notebook: check-env
