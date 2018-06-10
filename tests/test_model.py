@@ -2,8 +2,8 @@ import pytest
 from flask.ext.testing import TestCase
 
 from app import create_app, db
-from app.model import GenerationReport
-from tests.df_helper import single_generation_report
+from app.model import GenerationReport, WeatherForecast
+from tests.df_helper import single_generation_report, single_weather_forecast
 
 
 class TestModel(TestCase):
@@ -15,16 +15,12 @@ class TestModel(TestCase):
         GenerationReport.insert("EU", "TEST_CA", report)
         db_reports = GenerationReport.query.all()
         assert len(db_reports) == 1
-        assert db_reports[0].renewables == 12266.0
-        assert db_reports[0].non_renewables == 4470.0
 
     def test_weather_forecast_insertion(self):
-        report = single_weather_forecast()
-        GenerationReport.insert("EU", "TEST_CA", report)
-        db_reports = GenerationReport.query.all()
-        assert len(db_reports) == 1
-        assert db_reports[0].renewables == 12266.0
-        assert db_reports[0].non_renewables == 4470.0
+        forecast = single_weather_forecast()
+        WeatherForecast.insert("Berlin", forecast)
+        db_forecasts = WeatherForecast.query.all()
+        assert len(db_forecasts) == 1
 
     def setUp(self):
         db.create_all()
