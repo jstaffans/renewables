@@ -12,7 +12,7 @@ ifndef VIRTUAL_ENV
 endif
 
 pretty: check-env
-	black renewables.py app
+	black renewables.py app tests
 
 notebook: check-env
 	jupyter notebook --notebook-dir=notebooks/
