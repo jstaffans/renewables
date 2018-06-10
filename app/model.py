@@ -62,6 +62,27 @@ class WeatherForecast(db.Model):
     temperature = db.Column(db.Float, nullable=False)
     pressure = db.Column(db.Float, nullable=False)
 
+    @staticmethod
+    def insert(city_name, report):
+        """
+        Inserts a weather forecast in the form a Pandas DataFrame into the database.
+        """
+        assert isinstance(report, pd.DataFrame)
+
+        rows = []
+        dict_report = report.to_dict("index")
+        for k, v in dict_report.items():
+            row = {}
+            row["city_name"] = city_name
+            row["timestamp"] = k.to_pydatetime()
+            row["wind_speed"] = v["wind_speed"]
+            row["cloud_cover"] = v["cloud_cover"]
+            row["temperature"] = v["temperature"]
+            row["pressure"] = v["pressure"]
+            rows.append(row)
+
+        db.engine.execute(WeatherForecast.__table__.insert(), rows)
+
     def __repr__(self):
         timestamp = f"timestamp='{self.timestamp:%Y-%m-%d %H:%M}'"
         city_name = f"city_name='{self.city_name}'"
