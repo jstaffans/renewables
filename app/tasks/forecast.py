@@ -12,6 +12,7 @@ def check_historical_data_present():
 
     hour_now = datetime.now().replace(minute=0, second=0, microsecond=0)
     num_hours = 48
+    weather_forecast_hours = 6
 
     generation_reports = GenerationReport.query.filter(
         GenerationReport.timestamp >= hour_now - timedelta(hours=num_hours)
@@ -21,4 +22,7 @@ def check_historical_data_present():
         WeatherForecast.timestamp >= hour_now - timedelta(hours=num_hours)
     ).all()
 
-    return len(generation_reports) >= 48 and len(weather_forecasts) >= 48
+    return (
+        len(generation_reports) >= num_hours
+        and len(weather_forecasts) >= num_hours + weather_forecast_hours
+    )

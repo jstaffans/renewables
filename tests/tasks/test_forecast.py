@@ -37,6 +37,11 @@ class TestForecast(TestCase):
             WeatherForecast.insert("Berlin", weather_forecast)
             h = h + timedelta(hours=1)
 
+        while h <= hour_now + timedelta(hours=6):
+            weather_forecast = timestamped_single_weather_forecast(h)
+            WeatherForecast.insert("Berlin", weather_forecast)
+            h = h + timedelta(hours=1)
+
         assert check_historical_data_present() == True
 
     def setUp(self):
