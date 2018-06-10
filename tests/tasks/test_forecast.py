@@ -4,7 +4,7 @@ from flask.ext.testing import TestCase
 
 from app import create_app, db
 from app.model import GenerationReport, WeatherForecast
-from app.tasks.forecast import check_historical_data_present
+from app.tasks.forecast import check_forecast_preconditions
 from tests.df_helper import (
     timestamped_single_generation_report,
     timestamped_single_weather_forecast,
@@ -24,7 +24,7 @@ class TestForecast(TestCase):
         weather_forecast = timestamped_single_weather_forecast(hour_now)
         WeatherForecast.insert("Berlin", weather_forecast)
 
-        assert check_historical_data_present() == False
+        assert check_forecast_preconditions() == False
 
     def test_historical_data_present(self):
         hour_now = datetime.now().replace(minute=0, second=0, microsecond=0)
@@ -42,7 +42,7 @@ class TestForecast(TestCase):
             WeatherForecast.insert("Berlin", weather_forecast)
             h = h + timedelta(hours=1)
 
-        assert check_historical_data_present() == True
+        assert check_forecast_preconditions() == True
 
     def setUp(self):
         db.create_all()

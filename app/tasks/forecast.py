@@ -3,11 +3,12 @@ from app.tasks.generation import generation as generation_task
 from app.model import GenerationReport, WeatherForecast
 
 
-def check_historical_data_present():
+def check_forecast_preconditions():
     """
     Depending on the model used, we rely on some historical data
-    when the generation forecast is done. This task checks if
-    we have up-to-date data in the database.
+    when the generation forecast is done, as well as weather forecasts
+    for some time into the future. This task checks if we have up-to-date
+    data in the database.
     """
 
     hour_now = datetime.now().replace(minute=0, second=0, microsecond=0)
