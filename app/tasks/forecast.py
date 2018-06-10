@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from app.tasks.generation import generation as generation_task
-from app.model import WeatherForecast
+from app.model import GenerationReport, WeatherForecast
 
 
 def check_historical_data_present():
@@ -9,10 +9,16 @@ def check_historical_data_present():
     when the generation forecast is done. This task checks if
     we have up-to-date data in the database.
     """
-    weather_forecast_reports = WeatherForecast.query.filter(
-        WeatherForecast.timestamp >= datetime.now() - timedelta(days=2)
+
+    hour_now = datetime.now().replace(minute=0, second=0, microsecond=0)
+    num_hours = 48
+
+    generation_reports = GenerationReport.query.filter(
+        GenerationReport.timestamp >= hour_now - timedelta(hours=num_hours)
     ).all()
 
-    # TODO
+    weather_forecasts = WeatherForecast.query.filter(
+        WeatherForecast.timestamp >= hour_now - timedelta(hours=num_hours)
+    ).all()
 
-    return weather_forecast_reports
+    return len(generation_reports) >= 48 and len(weather_forecasts) >= 48
