@@ -3,6 +3,9 @@ from app.tasks.generation import generation as generation_task
 from app.model import GenerationReport, WeatherForecast
 
 
+HOURS_PAST = 48
+WEATHER_FORECAST_HOURS_FUTURE = 6
+
 def check_forecast_preconditions():
     """
     Depending on the model used, we rely on some historical data
@@ -12,18 +15,16 @@ def check_forecast_preconditions():
     """
 
     hour_now = datetime.now().replace(minute=0, second=0, microsecond=0)
-    num_hours = 48
-    weather_forecast_hours = 6
 
     generation_reports = GenerationReport.query.filter(
-        GenerationReport.timestamp >= hour_now - timedelta(hours=num_hours)
+        GenerationReport.timestamp >= hour_now - timedelta(hours=HOURS_PAST)
     ).all()
 
     weather_forecasts = WeatherForecast.query.filter(
-        WeatherForecast.timestamp >= hour_now - timedelta(hours=num_hours)
+        WeatherForecast.timestamp >= hour_now - timedelta(hours=HOURS_PAST)
     ).all()
 
     return (
-        len(generation_reports) >= num_hours
-        and len(weather_forecasts) >= num_hours + weather_forecast_hours
+        len(generation_reports) >= HOURS_PAST
+        and len(weather_forecasts) >= HOURS_PAST + WEATHER_FORECAST_HOURS_FUTURE
     )
