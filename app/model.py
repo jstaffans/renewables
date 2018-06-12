@@ -40,7 +40,7 @@ class GenerationReport(db.Model):
             row["non_renewables"] = v["non_renewables"]
             rows.append(row)
 
-        db.engine.execute(GenerationReport.__table__.insert(), rows)
+        db.engine.execute(GenerationReport.__table__.insert().prefix_with("OR REPLACE"), rows)
 
     def __repr__(self):
         timestamp = f"timestamp='{self.timestamp:%Y-%m-%d %H:%M}'"
@@ -81,7 +81,7 @@ class WeatherForecast(db.Model):
             row["pressure"] = v["pressure"]
             rows.append(row)
 
-        db.engine.execute(WeatherForecast.__table__.insert(), rows)
+        db.engine.execute(WeatherForecast.__table__.insert().prefix_with("OR REPLACE"), rows)
 
     def __repr__(self):
         timestamp = f"timestamp='{self.timestamp:%Y-%m-%d %H:%M}'"

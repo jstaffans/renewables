@@ -22,6 +22,13 @@ class TestModel(TestCase):
         db_forecasts = WeatherForecast.query.all()
         assert len(db_forecasts) == 1
 
+    def test_replacement(self):
+        forecast = single_weather_forecast()
+        WeatherForecast.insert("Berlin", forecast)
+        WeatherForecast.insert("Berlin", forecast)
+        db_forecasts = WeatherForecast.query.all()
+        assert len(db_forecasts) == 1
+
     def setUp(self):
         db.create_all()
 
