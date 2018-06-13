@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 
 def _truncate_datetime(dt):
@@ -11,3 +11,7 @@ def hour_range(day):
     while hour < start_midnight + timedelta(days=1):
         yield hour
         hour = hour + timedelta(hours=1)
+
+
+def hour_now():
+    return datetime.now().replace(minute=0, second=0, microsecond=0)
