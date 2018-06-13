@@ -3,6 +3,10 @@ from app.tasks.generation import generation as generation_task
 from app.model import GenerationReport, WeatherForecast
 
 
+# How many hours of data is needed depends on the forecast model used.
+# 48 hours is a conservative number that should be enough even if the
+# model changes.
+
 HOURS_PAST = 48
 WEATHER_FORECAST_HOURS_FUTURE = 6
 
@@ -30,6 +34,9 @@ def check_historical_data_present(hour):
 def prepare_forecast(weather_task, api_token, city_name, hour):
     """
     Prepare database for calculating a forecast.
+
+    - always fetch latest weather forecast
+    - maybe fetch historical data if missing
     """
     forecast_horizon = hour + timedelta(hours=WEATHER_FORECAST_HOURS_FUTURE)
 
@@ -37,3 +44,5 @@ def prepare_forecast(weather_task, api_token, city_name, hour):
     weather_forecast_window = weather_forecast.ix[hour:forecast_horizon]
 
     WeatherForecast.insert_or_replace(city_name, weather_forecast_window)
+
+    # TODO: historical data
