@@ -14,6 +14,7 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = "sqlite://:memory:"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     BA_NAME = "EU"
+    CITY_NAME = "Berlin"
     WEATHER_API_TOKEN = os.environ.get("WEATHER_API_TOKEN")
 
 
