@@ -1,4 +1,6 @@
 import os
+import pandas as pd
+from datetime import datetime, timedelta
 from app.model import csv_to_pd
 
 #
@@ -35,4 +37,18 @@ def single_weather_forecast():
 def timestamped_single_weather_forecast(t):
     forecast = single_weather_forecast()
     forecast = _set_timestamp(forecast, t)
+    return forecast
+
+
+def current_weather_forecast():
+    """
+    Returns a dummy forecast for today and tomorrow (all 48 hours).
+    """
+    midnight = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    timestamp_series = pd.date_range(midnight, periods=48, freq="1h")
+    forecast = pd.DataFrame(index=timestamp_series)
+    forecast["temperature"] = 20.0
+    forecast["wind_speed"] = 0.0
+    forecast["cloud_cover"] = 0.0
+    forecast["pressure"] = 1024.0
     return forecast
