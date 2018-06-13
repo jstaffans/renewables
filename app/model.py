@@ -23,7 +23,7 @@ class GenerationReport(db.Model):
     non_renewables = db.Column(db.Float, nullable=False)
 
     @staticmethod
-    def insert(ba_name, control_area, report):
+    def insert_or_replace(ba_name, control_area, report):
         """
         Inserts a generation report in the form a Pandas DataFrame into the database.
         """
@@ -65,7 +65,7 @@ class WeatherForecast(db.Model):
     pressure = db.Column(db.Float, nullable=False)
 
     @staticmethod
-    def insert(city_name, report):
+    def insert_or_replace(city_name, report):
         """
         Inserts a weather forecast in the form a Pandas DataFrame into the database.
         """

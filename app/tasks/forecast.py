@@ -36,4 +36,4 @@ def prepare_forecast(weather_task, api_token, city_name, hour):
     weather_forecast = weather_task(api_token, city_name, hour, forecast_horizon)
     weather_forecast_window = weather_forecast.ix[hour:forecast_horizon]
 
-    WeatherForecast.insert(city_name, weather_forecast_window)
+    WeatherForecast.insert_or_replace(city_name, weather_forecast_window)

@@ -25,10 +25,10 @@ class TestForecast(TestCase):
         hour = hour_now()
 
         report = timestamped_single_generation_report(hour)
-        GenerationReport.insert("EU", "TEST_CA", report)
+        GenerationReport.insert_or_replace("EU", "TEST_CA", report)
 
         weather_forecast = timestamped_single_weather_forecast(hour)
-        WeatherForecast.insert("Berlin", weather_forecast)
+        WeatherForecast.insert_or_replace("Berlin", weather_forecast)
 
         assert check_historical_data_present(hour) == False
 
@@ -39,8 +39,8 @@ class TestForecast(TestCase):
         while h <= hour:
             report = timestamped_single_generation_report(h)
             weather_forecast = timestamped_single_weather_forecast(h)
-            GenerationReport.insert("EU", "TEST_CA", report)
-            WeatherForecast.insert("Berlin", weather_forecast)
+            GenerationReport.insert_or_replace("EU", "TEST_CA", report)
+            WeatherForecast.insert_or_replace("Berlin", weather_forecast)
             h = h + timedelta(hours=1)
 
         assert check_historical_data_present(hour) == True
