@@ -1,5 +1,4 @@
 import os
-import pytest
 from app.model import csv_to_pd
 
 #
@@ -19,7 +18,6 @@ def _set_timestamp(df, t):
     return df.set_index("timestamp")
 
 
-@pytest.fixture(scope="module")
 def single_generation_report():
     return csv_to_pd(_csv("generation_2018_single.csv"))
 
@@ -30,7 +28,6 @@ def timestamped_single_generation_report(t):
     return reading
 
 
-@pytest.fixture(scope="module")
 def single_weather_forecast():
     return csv_to_pd(_csv("weather_2018_single.csv"))
 
