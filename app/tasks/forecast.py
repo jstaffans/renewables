@@ -11,7 +11,7 @@ HOURS_PAST = 48
 WEATHER_FORECAST_HOURS_FUTURE = 6
 
 
-def _update_weather_forecast(weather_task, api_token, time_and_location):
+def _update_weather_forecast(weather_task, time_and_location):
     """
     Fetches latest weather forecast and saves it to the database.
     """
@@ -19,7 +19,7 @@ def _update_weather_forecast(weather_task, api_token, time_and_location):
         hours=WEATHER_FORECAST_HOURS_FUTURE
     )
     weather_forecast = weather_task(
-        api_token, time_and_location.city, time_and_location.hour, forecast_horizon
+        time_and_location.city, time_and_location.hour, forecast_horizon
     )
     weather_forecast_window = weather_forecast.ix[
         time_and_location.hour : forecast_horizon
@@ -28,7 +28,7 @@ def _update_weather_forecast(weather_task, api_token, time_and_location):
 
 
 def prepare_forecast(
-    historical_data_source, weather_task, api_token, time_and_location
+        historical_data_source, generation_task, weather_task, time_and_location
 ):
     """
     Prepare database for calculating a forecast.
@@ -37,7 +37,7 @@ def prepare_forecast(
     - maybe fetch historical data if missing
     """
 
-    _update_weather_forecast(weather_task, api_token, time_and_location)
+    _update_weather_forecast(weather_task, time_and_location)
 
     generation_reports, weather_forecasts = historical_data_source(
         time_and_location.hour, HOURS_PAST

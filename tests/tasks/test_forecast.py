@@ -31,15 +31,18 @@ class TestForecast(TestCase):
         db.drop_all()
 
     def test_forecast_preparation(self):
-        def stub_weather_task(api_token, city_name, start, end):
+        def stub_generation_task():
+            pass
+
+        def stub_weather_task(city_name, start, end):
             return current_weather_forecast()
 
         assert len(WeatherForecast.query.all()) == 0
 
         prepare_forecast(
             full_historical_data,
+            stub_generation_task,
             stub_weather_task,
-            "test_token",
             self.time_and_location,
         )
 
