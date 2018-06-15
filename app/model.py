@@ -1,8 +1,13 @@
+from collections import namedtuple
 from datetime import datetime
 import pandas as pd
 
 from app import db
 
+
+ForecastTimeAndLocation = namedtuple(
+    "ForecastTimeAndLocation", "ba_name control_area city hour"
+)
 
 # ENTSO-E mappings
 RENEWABLES = ["wind", "hydro", "solar", "biomass"]
