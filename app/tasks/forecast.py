@@ -11,25 +11,24 @@ HOURS_PAST = 48
 WEATHER_FORECAST_HOURS_FUTURE = 6
 
 
-def _update_weather_forecast(weather_task, time_and_location):
+def _update_weather_forecast(weather_task, hour):
     """
     Fetches latest weather forecast and saves it to the database.
     """
-    forecast_horizon = time_and_location.hour + timedelta(
-        hours=WEATHER_FORECAST_HOURS_FUTURE
-    )
-    weather_forecast = weather_task(
-        time_and_location.city, time_and_location.hour, forecast_horizon
-    )
-    weather_forecast_window = weather_forecast.ix[
-        time_and_location.hour : forecast_horizon
-    ]
-    WeatherForecast.insert_or_replace(time_and_location.city, weather_forecast_window)
+    forecast_horizon = hour + timedelta(hours=WEATHER_FORECAST_HOURS_FUTURE)
+    weather_forecast = weather_task(hour, forecast_horizon)
+    weather_forecast_window = weather_forecast.ix[hour:forecast_horizon]
+    WeatherForecast.insert_or_replace(weather_forecast_window)
 
 
-def prepare_forecast(
-        historical_data_source, generation_task, weather_task, time_and_location
-):
+def _update_historical_data(generation_task, weather_task, hour, hours_past):
+    start = hour - timedelta(hours=hours_past)
+    end = hour
+    generation_report = generation_task(start, end)
+    weather_report = weather_task(start, end)
+
+
+def prepare_forecast(historical_data_source, generation_task, weather_task, hour):
     """
     Prepare database for calculating a forecast.
 
@@ -37,13 +36,11 @@ def prepare_forecast(
     - maybe fetch historical data if missing
     """
 
-    _update_weather_forecast(weather_task, time_and_location)
+    _update_weather_forecast(weather_task, hour)
 
-    generation_reports, weather_forecasts = historical_data_source(
-        time_and_location.hour, HOURS_PAST
-    )
+    generation_reports, weather_forecasts = historical_data_source(hour, HOURS_PAST)
 
     if is_historical_data_present(generation_reports, weather_forecasts, HOURS_PAST):
         return
 
-    # TODO: historical data
+    _update_historical_data(generation_task, weather_task, hour, HOURS_PAST)

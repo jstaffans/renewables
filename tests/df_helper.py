@@ -30,6 +30,15 @@ def timestamped_single_generation_report(t):
     return reading
 
 
+def generation_report_range(start, end):
+    t = start.replace(hour=0, minute=0, second=0, microsecond=0)
+    df = pd.DataFrame()
+    while t < end:
+        df = df.append(timestamped_single_generation_report(t))
+        t = t + timedelta(hours=1)
+    return df
+
+
 def single_weather_forecast():
     return csv_to_pd(_csv("weather_2018_single.csv"))
 

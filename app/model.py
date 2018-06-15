@@ -5,10 +5,6 @@ import pandas as pd
 from app import db
 
 
-ForecastTimeAndLocation = namedtuple(
-    "ForecastTimeAndLocation", "ba_name control_area city hour"
-)
-
 # ENTSO-E mappings
 RENEWABLES = ["wind", "hydro", "solar", "biomass"]
 NON_RENEWABLES = ["coal", "fossil", "natgas", "oil", "other", "refuse"]
@@ -21,14 +17,12 @@ def csv_to_pd(filename):
 
 class GenerationReport(db.Model):
     __table_args__ = {"info": {"without_rowid": True}}
-    ba_name = db.Column(db.String, primary_key=True)
-    control_area = db.Column(db.String, primary_key=True)
     timestamp = db.Column(db.DateTime, primary_key=True)
     renewables = db.Column(db.Float, nullable=False)
     non_renewables = db.Column(db.Float, nullable=False)
 
     @staticmethod
-    def insert_or_replace(ba_name, control_area, report):
+    def insert_or_replace(report):
         """
         Inserts a generation report in the form a Pandas DataFrame into the database.
         """
@@ -38,8 +32,6 @@ class GenerationReport(db.Model):
         dict_report = report.to_dict("index")
         for k, v in dict_report.items():
             row = {}
-            row["ba_name"] = ba_name
-            row["control_area"] = control_area
             row["timestamp"] = k.to_pydatetime()
             row["renewables"] = v["renewables"]
             row["non_renewables"] = v["non_renewables"]
@@ -62,7 +54,6 @@ class WeatherForecast(db.Model):
     """
 
     __table_args__ = {"info": {"without_rowid": True}}
-    city = db.Column(db.String, primary_key=True)
     timestamp = db.Column(db.DateTime, primary_key=True)
     wind_speed = db.Column(db.Float, nullable=False)
     cloud_cover = db.Column(db.Float, nullable=False)
@@ -70,7 +61,7 @@ class WeatherForecast(db.Model):
     pressure = db.Column(db.Float, nullable=False)
 
     @staticmethod
-    def insert_or_replace(city, report):
+    def insert_or_replace(report):
         """
         Inserts a weather forecast in the form a Pandas DataFrame into the database.
         """
@@ -80,7 +71,6 @@ class WeatherForecast(db.Model):
         dict_report = report.to_dict("index")
         for k, v in dict_report.items():
             row = {}
-            row["city"] = city
             row["timestamp"] = k.to_pydatetime()
             row["wind_speed"] = v["wind_speed"]
             row["cloud_cover"] = v["cloud_cover"]
