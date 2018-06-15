@@ -97,3 +97,32 @@ class WeatherForecast(db.Model):
         city = f"city='{self.city}'"
         temperature = f"temperature={self.temperature:.1f}"
         return f"<WeatherForecast {timestamp} {city} {temperature}>"
+
+
+def historical_data(hour, hours_past):
+    """
+    Returns a tuple of GenerationReport and WeatherForecast lists
+    representing historical data looking back from the given hour.
+    """
+
+    generation_reports = GenerationReport.query.filter(
+        GenerationReport.timestamp >= hour - timedelta(hours=HOURS_PAST)
+    ).all()
+
+    weather_forecasts = WeatherForecast.query.filter(
+        WeatherForecast.timestamp >= hour - timedelta(hours=HOURS_PAST)
+    ).all()
+
+    return (generation_reports, weather_forecasts)
+
+
+def is_historical_data_present(generation_reports, weather_forecasts, hours_past):
+    """
+    Depending on the model used, we rely on some historical data
+    when the generation forecast is done. This function checks that we
+    have the necessary data.
+    """
+
+    return (
+        len(generation_reports) >= hours_past and len(weather_forecasts) >= hours_past
+    )
