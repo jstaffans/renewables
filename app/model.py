@@ -96,4 +96,4 @@ class WeatherForecast(db.Model):
         timestamp = f"timestamp='{self.timestamp:%Y-%m-%d %H:%M}'"
         city = f"city='{self.city}'"
         temperature = f"temperature={self.temperature:.1f}"
-        return f"<GenerationReport {timestamp} {city} {temperature}>"
+        return f"<WeatherForecast {timestamp} {city} {temperature}>"
