@@ -34,7 +34,7 @@ def _tidy(df):
     return df.fillna(value=np.NaN).fillna(method="ffill")
 
 
-def weather(api_token, city_name, start, end):
+def weather(api_token, city, start, end):
     """
     Returns an hourly report of cloud cover, wind and temperature data
     for the given city.
@@ -42,7 +42,7 @@ def weather(api_token, city_name, start, end):
     Timestamps are in UTC.
     """
     a = Astral()
-    city = a[city_name]
+    city = a[city]
 
     # hour=0 would give us the previous day
     d = start.replace(hour=6)

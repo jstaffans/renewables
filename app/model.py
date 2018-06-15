@@ -62,7 +62,7 @@ class WeatherForecast(db.Model):
     """
 
     __table_args__ = {"info": {"without_rowid": True}}
-    city_name = db.Column(db.String, primary_key=True)
+    city = db.Column(db.String, primary_key=True)
     timestamp = db.Column(db.DateTime, primary_key=True)
     wind_speed = db.Column(db.Float, nullable=False)
     cloud_cover = db.Column(db.Float, nullable=False)
@@ -70,7 +70,7 @@ class WeatherForecast(db.Model):
     pressure = db.Column(db.Float, nullable=False)
 
     @staticmethod
-    def insert_or_replace(city_name, report):
+    def insert_or_replace(city, report):
         """
         Inserts a weather forecast in the form a Pandas DataFrame into the database.
         """
@@ -80,7 +80,7 @@ class WeatherForecast(db.Model):
         dict_report = report.to_dict("index")
         for k, v in dict_report.items():
             row = {}
-            row["city_name"] = city_name
+            row["city"] = city
             row["timestamp"] = k.to_pydatetime()
             row["wind_speed"] = v["wind_speed"]
             row["cloud_cover"] = v["cloud_cover"]
@@ -94,6 +94,6 @@ class WeatherForecast(db.Model):
 
     def __repr__(self):
         timestamp = f"timestamp='{self.timestamp:%Y-%m-%d %H:%M}'"
-        city_name = f"city_name='{self.city_name}'"
+        city = f"city='{self.city}'"
         temperature = f"temperature={self.temperature:.1f}"
-        return f"<GenerationReport {timestamp} {city_name} {temperature}>"
+        return f"<GenerationReport {timestamp} {city} {temperature}>"
