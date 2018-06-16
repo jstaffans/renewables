@@ -3,19 +3,11 @@ from app.tasks.generation import generation as generation_task
 from app.model import GenerationReport, WeatherForecast, is_historical_data_present
 
 
-# How many hours of data is needed depends on the forecast model used.
-# 48 hours is a conservative number that should be enough even if the
-# model changes.
-
-HOURS_PAST = 48
-WEATHER_FORECAST_HOURS_FUTURE = 6
-
-
-def _update_weather_forecast(weather_task, hour):
+def _update_weather_forecast(weather_task, hour, hours_forecast):
     """
     Fetches latest weather forecast and saves it to the database.
     """
-    forecast_horizon = hour + timedelta(hours=WEATHER_FORECAST_HOURS_FUTURE)
+    forecast_horizon = hour + timedelta(hours=hours_forecast)
     weather_forecast = weather_task(hour, forecast_horizon)
     weather_forecast_window = weather_forecast.ix[hour:forecast_horizon]
     WeatherForecast.insert_or_replace(weather_forecast_window)
@@ -30,7 +22,9 @@ def _update_historical_data(generation_task, weather_task, hour, hours_past):
     WeatherForecast.insert_or_replace(weather_report)
 
 
-def prepare_forecast(historical_data_source, generation_task, weather_task, hour):
+def prepare_forecast(
+    historical_data_source, generation_task, weather_task, hour, model_params
+):
     """
     Prepare database for calculating a forecast.
 
@@ -38,11 +32,17 @@ def prepare_forecast(historical_data_source, generation_task, weather_task, hour
     - maybe fetch historical data if missing
     """
 
-    _update_weather_forecast(weather_task, hour)
+    _update_weather_forecast(weather_task, hour, model_params.hours_forecast)
 
-    generation_reports, weather_forecasts = historical_data_source(hour, HOURS_PAST)
+    generation_reports, weather_forecasts = historical_data_source(
+        hour, model_params.hours_past
+    )
 
-    if is_historical_data_present(generation_reports, weather_forecasts, HOURS_PAST):
+    if is_historical_data_present(
+        generation_reports, weather_forecasts, model_params.hours_past
+    ):
         return
 
-    _update_historical_data(generation_task, weather_task, hour, HOURS_PAST)
+    _update_historical_data(
+        generation_task, weather_task, hour, model_params.hours_past
+    )

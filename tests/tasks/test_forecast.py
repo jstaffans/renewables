@@ -4,15 +4,12 @@ from flask.ext.testing import TestCase
 
 from app import create_app, db
 from app.model import (
+    ModelParameters,
     GenerationReport,
     WeatherForecast,
     historical_data as db_historical_data,
 )
-from app.tasks.forecast import (
-    prepare_forecast,
-    HOURS_PAST,
-    WEATHER_FORECAST_HOURS_FUTURE,
-)
+from app.tasks.forecast import prepare_forecast
 from app.util import hour_now
 from tests.df_helper import (
     timestamped_single_generation_report,
@@ -24,6 +21,9 @@ from tests.model_helper import no_historical_data
 
 
 class TestForecast(TestCase):
+
+    model_params = ModelParameters(hours_past=25, hours_forecast=6)
+
     def create_app(self):
         return create_app("app.TestingConfig")
 
@@ -47,7 +47,11 @@ class TestForecast(TestCase):
         hour = hour_now()
 
         prepare_forecast(
-            no_historical_data, stub_generation_task, stub_weather_task, hour
+            no_historical_data,
+            stub_generation_task,
+            stub_weather_task,
+            hour,
+            self.model_params,
         )
 
         generation_reports = GenerationReport.query.order_by(
@@ -57,24 +61,35 @@ class TestForecast(TestCase):
             WeatherForecast.timestamp
         ).all()
 
-        assert len(generation_reports) >= HOURS_PAST
+        # given 25 hours model param, we'll always have two days' worth of generation reports
+        assert len(generation_reports) == 48
 
         # ENTSO API returns full days only, so the report for the first day starts at midnight,
         # and the last day ends  at 23:00
         assert generation_reports[0].timestamp.hour == 0
         assert generation_reports[-1].timestamp.hour == 23
 
-        assert len(weather_reports_and_forecasts) in [
-            HOURS_PAST + WEATHER_FORECAST_HOURS_FUTURE,
-            HOURS_PAST + WEATHER_FORECAST_HOURS_FUTURE + 1,
-        ]
+        if hour.minute == 0 and hour.second == 0 and hour.microsecond == 0:
+            assert (
+                len(weather_reports_and_forecasts)
+                == self.model_params.hours_past + self.model_params.hours_forecast
+            )
+        else:
+            assert (
+                len(weather_reports_and_forecasts)
+                == self.model_params.hours_past + self.model_params.hours_forecast + 1
+            )
 
         # running preparation task again should not update any data
         generation_reports_copy = generation_reports.copy()
         weather_reports_copy = weather_reports_and_forecasts.copy()
 
         prepare_forecast(
-            db_historical_data, stub_generation_task, stub_weather_task, hour
+            db_historical_data,
+            stub_generation_task,
+            stub_weather_task,
+            hour,
+            self.model_params,
         )
 
         generation_reports = GenerationReport.query.order_by(

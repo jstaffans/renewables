@@ -5,11 +5,11 @@ import pandas as pd
 from app import db
 
 
-# TODO: namedtuple representing model parameters, use it in forecast task
-
 # ENTSO-E mappings
 RENEWABLES = ["wind", "hydro", "solar", "biomass"]
 NON_RENEWABLES = ["coal", "fossil", "natgas", "oil", "other", "refuse"]
+
+ModelParameters = namedtuple("ModelParameters", "hours_past hours_forecast")
 
 
 def csv_to_pd(filename):
