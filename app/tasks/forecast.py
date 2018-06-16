@@ -26,6 +26,8 @@ def _update_historical_data(generation_task, weather_task, hour, hours_past):
     end = hour
     generation_report = generation_task(start, end)
     weather_report = weather_task(start, end)
+    GenerationReport.insert_or_replace(generation_report)
+    WeatherForecast.insert_or_replace(weather_report)
 
 
 def prepare_forecast(historical_data_source, generation_task, weather_task, hour):

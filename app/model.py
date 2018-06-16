@@ -1,9 +1,11 @@
 from collections import namedtuple
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 
 from app import db
 
+
+# TODO: namedtuple representing model parameters, use it in forecast task
 
 # ENTSO-E mappings
 RENEWABLES = ["wind", "hydro", "solar", "biomass"]
@@ -84,9 +86,8 @@ class WeatherForecast(db.Model):
 
     def __repr__(self):
         timestamp = f"timestamp='{self.timestamp:%Y-%m-%d %H:%M}'"
-        city = f"city='{self.city}'"
         temperature = f"temperature={self.temperature:.1f}"
-        return f"<WeatherForecast {timestamp} {city} {temperature}>"
+        return f"<WeatherForecast {timestamp} {temperature}>"
 
 
 def historical_data(hour, hours_past):
@@ -95,13 +96,21 @@ def historical_data(hour, hours_past):
     representing historical data looking back from the given hour.
     """
 
-    generation_reports = GenerationReport.query.filter(
-        GenerationReport.timestamp >= hour - timedelta(hours=HOURS_PAST)
-    ).all()
+    generation_reports = (
+        GenerationReport.query.filter(
+            GenerationReport.timestamp >= hour - timedelta(hours=hours_past)
+        )
+        .order_by(GenerationReport.timestamp)
+        .all()
+    )
 
-    weather_forecasts = WeatherForecast.query.filter(
-        WeatherForecast.timestamp >= hour - timedelta(hours=HOURS_PAST)
-    ).all()
+    weather_forecasts = (
+        WeatherForecast.query.filter(
+            WeatherForecast.timestamp >= hour - timedelta(hours=hours_past)
+        )
+        .order_by(WeatherForecast.timestamp)
+        .all()
+    )
 
     return (generation_reports, weather_forecasts)
 

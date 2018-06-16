@@ -31,11 +31,14 @@ def timestamped_single_generation_report(t):
 
 
 def generation_report_range(start, end):
-    t = start.replace(hour=0, minute=0, second=0, microsecond=0)
     df = pd.DataFrame()
-    while t < end:
+
+    # ENTSO API returns full days only, simulate that behavior
+    t = start.replace(hour=0, minute=0, second=0, microsecond=0)
+    while t <= end.replace(hour=23):
         df = df.append(timestamped_single_generation_report(t))
         t = t + timedelta(hours=1)
+
     return df
 
 
@@ -49,15 +52,10 @@ def timestamped_single_weather_forecast(t):
     return forecast
 
 
-def current_weather_forecast():
-    """
-    Returns a dummy forecast for today and tomorrow (all 48 hours).
-    """
-    midnight = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    timestamp_series = pd.date_range(midnight, periods=48, freq="1h")
-    forecast = pd.DataFrame(index=timestamp_series)
-    forecast["temperature"] = 20.0
-    forecast["wind_speed"] = 0.0
-    forecast["cloud_cover"] = 0.0
-    forecast["pressure"] = 1024.0
-    return forecast
+def weather_report_range(start, end):
+    h = start
+    weather = pd.DataFrame()
+    while h < end:
+        weather = weather.append(timestamped_single_weather_forecast(h))
+        h = h + timedelta(hours=1)
+    return weather

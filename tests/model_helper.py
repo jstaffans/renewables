@@ -31,3 +31,7 @@ def partial_historical_data(hour, hours_past):
     generation_reports.pop()
     weather_forecasts.pop()
     return (generation_reports, weather_forecasts)
+
+
+def no_historical_data(hour, hours_past):
+    return ([], [])
