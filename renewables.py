@@ -3,14 +3,17 @@ import os
 import pandas as pd
 from dateutil.parser import parse
 from datetime import datetime, timedelta
+from functools import partial
 from flask import Flask, render_template
 from flask_webpack import Webpack
 
 from app import create_app
-from app.model import csv_to_pd, GenerationReport
+from app.model import csv_to_pd, GenerationReport, ModelParameters, historical_data
 from app.tasks.generation import generation as generation_task
 from app.tasks.sun import sun_calendar as sun_calendar_task
 from app.tasks.weather import weather as weather_task
+from app.tasks.forecast import prepare_forecast as prepare_forecast_task
+from app.util import hour_now
 
 
 app = create_app()
@@ -63,6 +66,7 @@ def generation(control_area, date, output_dir):
 def generation_range(control_area, start_date, days, output_dir):
     """
     Outputs generation reports for a date range, one CSV report per day, to the given directory.
+    Note that the timestamps of the generated report are in UTC.
     """
     start = _parse_date(start_date)
 
@@ -105,9 +109,29 @@ def environment_range(city_name, start_date, days, output_dir):
 @click.option("--control_area", default="DE(50HzT)")
 @click.argument("input", type=click.File("rb"))
 def load_generation_report(control_area, input):
+    """
+    Manually load a CSV generation report into the database.
+    """
     data = csv_to_pd(input)
     GenerationReport.insert_or_replace(app.config["BA_NAME"], control_area, data)
     print(f"Inserted {data.count()} rows")
+
+
+@app.cli.command()
+@click.option("--control_area", default="DE(50HzT)")
+@click.option("--city_name", default="Berlin")
+@click.option("--hours_past", default=25)
+@click.option("--hours_forecast", default=6)
+def prepare_forecast(control_area, city_name, hours_past, hours_forecast):
+    """
+    Prepares database for forecast at the current point in time.
+    """
+    model = ModelParameters(hours_past, hours_forecast)
+    hour = hour_now()
+    generation = partial(generation_task, app.config["BA_NAME"], control_area)
+    weather = partial(weather_task, app.config["WEATHER_API_TOKEN"], city_name)
+    prepare_forecast_task(historical_data, generation, weather, hour, model)
+    print("Prepared database for forecast at {hour}")
 
 
 if __name__ == "__main__":

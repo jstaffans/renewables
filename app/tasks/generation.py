@@ -140,6 +140,9 @@ transform = compose(
 def generation(ba_name, control_area, start, end):
     """
     Returns a per-hour generation report as a Pandas DataFrame.
+    Start and end should be in UTC, since the ENTSO-E API interprets
+    datetimes as being in UTC. The timestamps in the returned
+    report are also UTC.
     """
     raw = raw_generation(ba_name, control_area, start, end)
     raw["timestamp"] = pd.to_datetime(raw["timestamp"])

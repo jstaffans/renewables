@@ -30,6 +30,8 @@ def prepare_forecast(
 
     - always fetch latest weather forecast
     - maybe fetch historical data if missing
+
+    The hour should be in UTC.
     """
 
     _update_weather_forecast(weather_task, hour, model_params.hours_forecast)

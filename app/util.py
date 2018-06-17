@@ -14,4 +14,4 @@ def hour_range(day):
 
 
 def hour_now():
-    return datetime.now().replace(minute=0, second=0, microsecond=0)
+    return datetime.utcnow().replace(minute=0, second=0, microsecond=0)
