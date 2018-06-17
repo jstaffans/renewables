@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 
 from app.model import RENEWABLES, NON_RENEWABLES
+from app.util import full_hour_series
 
 
 @retry(5, errors=HTTPError)
@@ -39,7 +40,8 @@ def _group_without_missing_data(group):
     source_zero_mw = pd.DataFrame([source])
     source_zero_mw.at[source_zero_mw.index[0], "gen_MW"] = 0
     start = source["timestamp"].replace(hour=0, minute=15)
-    series = pd.date_range(start, periods=24 * 4, freq="15min")
+    end = group.iloc[-1].timestamp
+    series = full_hour_series(start, end, "15min")
 
     def filler(t):
         filler = source_zero_mw.copy()
@@ -144,6 +146,7 @@ def generation(ba_name, control_area, start, end):
     datetimes as being in UTC. The timestamps in the returned
     report are also UTC.
     """
+    assert start.hour == 0, "ENTSO-E API requests should always start at midnight"
     raw = raw_generation(ba_name, control_area, start, end)
     raw["timestamp"] = pd.to_datetime(raw["timestamp"])
     return transform(raw)

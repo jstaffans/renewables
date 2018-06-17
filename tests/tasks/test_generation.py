@@ -48,13 +48,13 @@ class TestGeneration(object):
         data = simple()
         without_nulls = generation.add_missing_megawatts(data)
         rows, _ = without_nulls.shape
-        assert rows == 192
+        assert rows == 8
         assert without_nulls.iloc[0]["gen_MW"] > 0
         assert without_nulls.iloc[0]["timestamp"] == parse("2018-01-02 00:15:00")
         assert without_nulls.iloc[1]["gen_MW"] == 0
         assert without_nulls.iloc[1]["timestamp"] == parse("2018-01-02 00:30:00")
-        assert without_nulls.iloc[191]["gen_MW"] == 0
-        assert without_nulls.iloc[191]["timestamp"] == parse("2018-01-03 00:00:00")
+        assert without_nulls.iloc[7]["gen_MW"] == 0
+        assert without_nulls.iloc[7]["timestamp"] == parse("2018-01-02 01:00:00")
 
     def test_downsampling(self):
         data = simple()
@@ -66,7 +66,7 @@ class TestGeneration(object):
         data = pivot()
         transformed = generation.transform(data)
         rows, _ = transformed.shape
-        assert rows == 24
+        assert rows == 2
 
     def test_column_normalisation(self):
         data = weird_columns()
