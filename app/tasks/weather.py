@@ -45,21 +45,28 @@ def _tidy(df):
     return df.fillna(value=np.NaN).fillna(method="ffill")
 
 
+def _num_days(start, end):
+    if start.hour == end.hour == 0:
+        return (end - start).days
+    else:
+        return (end.replace(hour=12) - start.replace(hour=12)).days + 1
+
+
 def weather(api_token, city, start, end):
     """
-    Returns an hourly report of cloud cover, wind and temperature data
-    for the given city.
-
-    Timestamps are in UTC.
+    Returns an hourly report of cloud cover, wind and temperature data for the
+    given city. The report is always in full days. Timestamps are in UTC.
     """
     a = Astral()
     city = a[city]
 
-    # hour=0 would give us the previous day
-    d = start.replace(hour=1)
+    # hour=0 would give us the previous day. Dark Sky always returns full days so
+    # we can just make one request per day from start to end, always at midday.
+    d = start.replace(hour=12)
+
     dfs = []
 
-    while d < end:
+    for i in range(_num_days(start, end)):
         weather = _raw_weather(api_token, city.latitude, city.longitude, d)
         df = _as_dataframe(weather, d)
         dfs.append(df)
