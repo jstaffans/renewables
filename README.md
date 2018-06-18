@@ -10,6 +10,7 @@ FLASK_APP=renewables.py
 ENTSOe_SECURITY_TOKEN=<token>
 RENEWABLES_DATABASE_URI=sqlite:////...   # absolute path to sqlite file
 RENEWABLES_CONFIG=app.DevelopmentConfig  # change to app.ProductionConfig for prod
+WEATHER_API_TOKEN=<token>                # dark sky api token
 ```
 
 ### Installing
