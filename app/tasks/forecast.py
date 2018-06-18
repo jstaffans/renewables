@@ -17,7 +17,8 @@ def _update_historical_data(generation_task, weather_task, hour, hours_past):
     start = hour - timedelta(hours=hours_past)
     end = hour
 
-    generation_report = generation_task(start.replace(hour=0), end)
+    # generation_report = generation_task(start.replace(hour=0), end)
+    generation_report = generation_task(start, end)
     weather_report = weather_task(start, end)
 
     GenerationReport.insert_or_replace(generation_report)

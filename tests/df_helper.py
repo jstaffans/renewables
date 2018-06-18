@@ -33,9 +33,8 @@ def timestamped_single_generation_report(t):
 def generation_report_range(start, end):
     df = pd.DataFrame()
 
-    # ENTSO API returns full days only, simulate that behavior
-    t = start.replace(hour=0, minute=0, second=0, microsecond=0)
-    while t <= end.replace(hour=23):
+    t = start
+    while t <= end:
         df = df.append(timestamped_single_generation_report(t))
         t = t + timedelta(hours=1)
 

@@ -39,7 +39,8 @@ def _group_without_missing_data(group):
     source = group.iloc[0]
     source_zero_mw = pd.DataFrame([source])
     source_zero_mw.at[source_zero_mw.index[0], "gen_MW"] = 0
-    start = source["timestamp"].replace(hour=0, minute=15)
+    # in case first 15 minutes are missing: make sure series starts at 15 minutes past
+    start = source["timestamp"].replace(minute=15)
     end = group.iloc[-1].timestamp
     series = full_hour_series(start, end, "15min")
 
@@ -146,7 +147,7 @@ def generation(ba_name, control_area, start, end):
     datetimes as being in UTC. The timestamps in the returned
     report are also UTC.
     """
-    assert start.hour == 0, "ENTSO-E API requests should always start at midnight"
+    #assert start.hour == 0, "ENTSO-E API requests should always start at midnight"
     raw = raw_generation(ba_name, control_area, start, end)
     raw["timestamp"] = pd.to_datetime(raw["timestamp"])
     return transform(raw)

@@ -36,9 +36,6 @@ class TestForecast(TestCase):
 
     def test_forecast_preparation(self):
         def stub_generation_task(start, end):
-            # we should always be requesting generation data starting at midnight
-            # to avoid the generation task's interpretation that data is missing
-            assert start.hour == 0
             return generation_report_range(start, end)
 
         def stub_weather_task(start, end):
@@ -64,10 +61,7 @@ class TestForecast(TestCase):
             WeatherForecast.timestamp
         ).all()
 
-        # given 25 hours model param, we'll always have two days' worth of generation reports
-        assert len(generation_reports) == 48
-
-        assert generation_reports[0].timestamp.hour == 0
+        assert len(generation_reports) == 26
 
         if hour.minute == 0 and hour.second == 0 and hour.microsecond == 0:
             assert (

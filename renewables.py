@@ -120,7 +120,7 @@ def load_generation_report(control_area, input):
 @app.cli.command()
 @click.option("--control_area", default="DE(50HzT)")
 @click.option("--city_name", default="Berlin")
-@click.option("--hours_past", default=25)
+@click.option("--hours_past", default=36)
 @click.option("--hours_forecast", default=6)
 def prepare_forecast(control_area, city_name, hours_past, hours_forecast):
     """
