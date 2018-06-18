@@ -147,7 +147,6 @@ def generation(ba_name, control_area, start, end):
     datetimes as being in UTC. The timestamps in the returned
     report are also UTC.
     """
-    #assert start.hour == 0, "ENTSO-E API requests should always start at midnight"
     raw = raw_generation(ba_name, control_area, start, end)
     raw["timestamp"] = pd.to_datetime(raw["timestamp"])
     return transform(raw)
