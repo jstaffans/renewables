@@ -20,7 +20,7 @@ def hour_now():
 
 def full_hour_series(start, end, resolution, min_hours=1):
     seconds = pd.Timedelta(resolution).total_seconds()
-    time_delta = end - start
+    time_delta = end - start.replace(minute=0)
     full_hour_periods = time_delta.floor("1h").total_seconds() / seconds
     full_hour_periods = max((min_hours * 60 * 60) / seconds, full_hour_periods)
     return pd.date_range(start, periods=full_hour_periods, freq=resolution)
