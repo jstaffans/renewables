@@ -1,8 +1,13 @@
 import pytest
 import pandas as pd
 from datetime import datetime, timedelta
+import pytz
 
 from app.tasks import sun
+
+
+def _utc(*args):
+    return pytz.utc.localize(datetime(*args))
 
 
 class TestSun(object):
@@ -13,8 +18,8 @@ class TestSun(object):
 
         rows, _ = calendar.shape
         assert rows == 24
-        assert calendar.iloc[0].name == datetime(2018, 4, 25)
-        assert calendar.iloc[23].name == datetime(2018, 4, 25, 23)
+        assert calendar.iloc[0].name == _utc(2018, 4, 25)
+        assert calendar.iloc[23].name == _utc(2018, 4, 25, 23)
 
     def test_48_hours(self):
         start = datetime(2018, 4, 25, 21, 53, 0)
@@ -23,8 +28,8 @@ class TestSun(object):
 
         rows, _ = calendar.shape
         assert rows == 48
-        assert calendar.iloc[0].name == datetime(2018, 4, 25)
-        assert calendar.iloc[47].name == datetime(2018, 4, 26, 23)
+        assert calendar.iloc[0].name == _utc(2018, 4, 25)
+        assert calendar.iloc[47].name == _utc(2018, 4, 26, 23)
 
     def test_day_and_night(self):
         start = datetime(2018, 4, 25, 21, 53, 0)

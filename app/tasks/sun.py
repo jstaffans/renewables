@@ -6,8 +6,7 @@ from app.util import hour_range
 from scipy.signal import savgol_filter
 
 
-def _is_sun_up(sunrise, sunset, t):
-    t_utc = pytz.timezone("UTC").localize(t)
+def _is_sun_up(sunrise, sunset, t_utc):
     return 1 if sunrise < t_utc < sunset else 0
 
 
@@ -16,13 +15,15 @@ def sun_calendar(city_name, start, end):
     Returns an hourly sun calendar for the given city. The calendar contains the
     information whether or not the sun is up during a given day and hour.
 
-    Timestamps are in UTC.
+    Timestamps are in UTC. Start and end dates are interpreted as UTC.
     """
+    start_utc = pytz.utc.localize(start)
+    end_utc = pytz.utc.localize(end)
     a = Astral()
     city = a[city_name]
-    d = start
+    d = start_utc
     records = []
-    while d < end:
+    while d < end_utc:
         sunrise = city.sunrise(date=d)
         sunset = city.sunset(date=d)
         records += [[t, _is_sun_up(sunrise, sunset, t)] for t in hour_range(d)]
