@@ -20,8 +20,7 @@ def csv_to_pd(filename):
 class GenerationReport(db.Model):
     __table_args__ = {"info": {"without_rowid": True}}
     timestamp = db.Column(db.DateTime, primary_key=True)
-    renewables = db.Column(db.Float, nullable=False)
-    non_renewables = db.Column(db.Float, nullable=False)
+    renewables_ratio = db.Column(db.Float, nullable=False)
 
     @staticmethod
     def insert_or_replace(report):
@@ -35,8 +34,7 @@ class GenerationReport(db.Model):
         for k, v in dict_report.items():
             row = {}
             row["timestamp"] = k.to_pydatetime()
-            row["renewables"] = v["renewables"]
-            row["non_renewables"] = v["non_renewables"]
+            row["renewables_ratio"] = v["renewables"] / (v["renewables"] + v["non_renewables"])
             rows.append(row)
 
         db.engine.execute(
@@ -45,9 +43,8 @@ class GenerationReport(db.Model):
 
     def __repr__(self):
         timestamp = f"timestamp='{self.timestamp:%Y-%m-%d %H:%M}'"
-        renewables = f"renewables={self.renewables:.2f}"
-        non_renewables = f"non_renewables={self.non_renewables:.2f}"
-        return f"<GenerationReport {timestamp} {renewables} {non_renewables}>"
+        ratio = f"renewables_ratio={self.renewables_ratio:.2f}"
+        return f"<GenerationReport {timestamp} {renewables_ratio}>"
 
 
 class WeatherForecast(db.Model):
