@@ -27,9 +27,11 @@ class TestModel(TestCase):
     def test_replacement(self):
         forecast = single_weather_forecast()
         WeatherForecast.insert_or_replace(forecast)
+        forecast.temperature = 1000.0
         WeatherForecast.insert_or_replace(forecast)
         db_forecasts = WeatherForecast.query.all()
         assert len(db_forecasts) == 1
+        assert db_forecasts[0].temperature == 1000.0
 
     def test_historical_data_missing(self):
         generation_reports, weather_forecasts = partial_historical_data(hour_now(), 48)
