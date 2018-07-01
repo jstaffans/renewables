@@ -133,3 +133,19 @@ def is_historical_data_present(generation_reports, weather_forecasts, hours_past
     return (
         len(generation_reports) >= hours_past and len(weather_forecasts) >= hours_past
     )
+
+def prediction_window(hour, hours_past):
+    """
+    (Historical) data which forms the base for a prediction. The prediction is made
+    for the next hour relative to the "hour" parameter.
+
+    To support making predictions more than hour into the future, generation data is first
+    retrieved from generation reports (ie actual data). If that's not enough, we attempt to
+    retrieve a generation prediction for the given hour.
+
+    Besides generation reports/forecasts, weather data is also part of the prediction window.
+
+    Returns a Pandas DataFrame that is ready to be plugged in to the prediction model.
+    """
+
+    pass
