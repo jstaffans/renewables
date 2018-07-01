@@ -47,6 +47,13 @@ class TestModel(TestCase):
             == True
         )
 
+    def test_prediction_window_fully_backed_by_historical_data(self):
+        generation_reports, weather_forecasts = full_historical_data(hour_now(), 48)
+        db.session.add_all(generation_reports)
+        db.session.add_all(weather_forecasts)
+        db.session.commit()
+
+
     def setUp(self):
         db.create_all()
 
