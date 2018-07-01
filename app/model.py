@@ -34,7 +34,9 @@ class GenerationReport(db.Model):
         for k, v in dict_report.items():
             row = {}
             row["timestamp"] = k.to_pydatetime()
-            row["renewables_ratio"] = v["renewables"] / (v["renewables"] + v["non_renewables"])
+            row["renewables_ratio"] = v["renewables"] / (
+                v["renewables"] + v["non_renewables"]
+            )
             rows.append(row)
 
         db.engine.execute(
@@ -133,6 +135,7 @@ def is_historical_data_present(generation_reports, weather_forecasts, hours_past
     return (
         len(generation_reports) >= hours_past and len(weather_forecasts) >= hours_past
     )
+
 
 def prediction_window(hour, hours_past):
     """

@@ -108,7 +108,6 @@ class TestForecast(TestCase):
                 historical_weather_range_datetimes.append(end)
             return weather_report_range(start, end)
 
-
         prepare_forecast(
             no_historical_data,
             self.stub_generation_task,
@@ -123,4 +122,7 @@ class TestForecast(TestCase):
 
         # Rely on LRU cache of weather_report_range
         raw_weather_data = weather_report_range(*historical_weather_range_datetimes)
-        assert weather_reports_and_forecasts[0].temperature == raw_weather_data.ix[1, "temperature"]
+        assert (
+            weather_reports_and_forecasts[0].temperature
+            == raw_weather_data.ix[1, "temperature"]
+        )

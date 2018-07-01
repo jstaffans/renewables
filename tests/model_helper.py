@@ -9,9 +9,7 @@ def full_historical_data(hour, hours_past):
     weather_forecasts = []
 
     while h < hour:
-        generation_reports.append(
-            GenerationReport(timestamp=h, renewables_ratio=0.5)
-        )
+        generation_reports.append(GenerationReport(timestamp=h, renewables_ratio=0.5))
         weather_forecasts.append(
             WeatherForecast(
                 timestamp=h,

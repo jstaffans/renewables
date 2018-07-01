@@ -53,7 +53,6 @@ class TestModel(TestCase):
         db.session.add_all(weather_forecasts)
         db.session.commit()
 
-
     def setUp(self):
         db.create_all()
 
