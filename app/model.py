@@ -47,6 +47,17 @@ class GenerationReport(db.Model):
         return f"<GenerationReport {timestamp} {renewables_ratio}>"
 
 
+class GenerationPrediction(db.Model):
+    __table_args__ = {"info": {"without_rowid": True}}
+    timestamp = db.Column(db.DateTime, primary_key=True)
+    renewables_ratio = db.Column(db.Float, nullable=False)
+
+    def __repr__(self):
+        timestamp = f"timestamp='{self.timestamp:%Y-%m-%d %H:%M}'"
+        ratio = f"renewables_ratio={self.renewables_ratio:.2f}"
+        return f"<GenerationPrediction {timestamp} {renewables_ratio}>"
+
+
 class WeatherForecast(db.Model):
     """
     Forecast at timestamp t for timestamp t+1 hour.
