@@ -1,6 +1,7 @@
 import pytest
 from datetime import datetime, timedelta
 from flask.ext.testing import TestCase
+import pandas as pd
 
 from app import create_app, db
 from app.model import (
@@ -34,13 +35,13 @@ class TestForecast(TestCase):
         db.session.remove()
         db.drop_all()
 
+    def stub_generation_task(self, start, end):
+        return generation_report_range(start, end)
+
+    def stub_weather_task(self, start, end):
+        return weather_report_range(start, end)
+
     def test_forecast_preparation(self):
-        def stub_generation_task(start, end):
-            return generation_report_range(start, end)
-
-        def stub_weather_task(start, end):
-            return weather_report_range(start, end)
-
         assert len(GenerationReport.query.all()) == 0
         assert len(WeatherForecast.query.all()) == 0
 
@@ -48,8 +49,8 @@ class TestForecast(TestCase):
 
         prepare_forecast(
             no_historical_data,
-            stub_generation_task,
-            stub_weather_task,
+            self.stub_generation_task,
+            self.stub_weather_task,
             hour,
             self.model_params,
         )
@@ -80,8 +81,8 @@ class TestForecast(TestCase):
 
         prepare_forecast(
             db_historical_data,
-            stub_generation_task,
-            stub_weather_task,
+            self.stub_generation_task,
+            self.stub_weather_task,
             hour,
             self.model_params,
         )
@@ -95,3 +96,31 @@ class TestForecast(TestCase):
 
         assert generation_reports_copy == generation_reports
         assert weather_reports_copy == weather_reports_and_forecasts
+
+    def test_weather_forecasts_are_shifted_by_one_hour(self):
+        historical_weather_range_datetimes = []
+
+        hour = hour_now()
+
+        def stub_weather_task(start, end):
+            if start < hour:
+                historical_weather_range_datetimes.append(start)
+                historical_weather_range_datetimes.append(end)
+            return weather_report_range(start, end)
+
+
+        prepare_forecast(
+            no_historical_data,
+            self.stub_generation_task,
+            stub_weather_task,
+            hour,
+            self.model_params,
+        )
+
+        weather_reports_and_forecasts = WeatherForecast.query.order_by(
+            WeatherForecast.timestamp
+        ).all()
+
+        # Rely on LRU cache of weather_report_range
+        raw_weather_data = weather_report_range(*historical_weather_range_datetimes)
+        assert weather_reports_and_forecasts[0].temperature == raw_weather_data.ix[1, "temperature"]

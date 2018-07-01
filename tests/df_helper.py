@@ -1,6 +1,8 @@
 import os
+import random
 import pandas as pd
 from datetime import datetime, timedelta
+from functools import lru_cache
 from app.model import csv_to_pd
 
 #
@@ -42,7 +44,9 @@ def generation_report_range(start, end):
 
 
 def single_weather_forecast():
-    return csv_to_pd(_csv("weather_2018_single.csv"))
+    forecast = csv_to_pd(_csv("weather_2018_single.csv"))
+    forecast.ix[0, "temperature"] = random.uniform(-20, 35)
+    return forecast
 
 
 def timestamped_single_weather_forecast(t):
@@ -51,6 +55,7 @@ def timestamped_single_weather_forecast(t):
     return forecast
 
 
+@lru_cache()
 def weather_report_range(start, end):
     h = start
     weather = pd.DataFrame()
