@@ -44,7 +44,7 @@ class GenerationReport(db.Model):
     def __repr__(self):
         timestamp = f"timestamp='{self.timestamp:%Y-%m-%d %H:%M}'"
         ratio = f"renewables_ratio={self.renewables_ratio:.2f}"
-        return f"<GenerationReport {timestamp} {renewables_ratio}>"
+        return f"<GenerationReport {timestamp} {ratio}>"
 
 
 class GenerationPrediction(db.Model):
@@ -55,7 +55,7 @@ class GenerationPrediction(db.Model):
     def __repr__(self):
         timestamp = f"timestamp='{self.timestamp:%Y-%m-%d %H:%M}'"
         ratio = f"renewables_ratio={self.renewables_ratio:.2f}"
-        return f"<GenerationPrediction {timestamp} {renewables_ratio}>"
+        return f"<GenerationPrediction {timestamp} {ratio}>"
 
 
 class WeatherForecast(db.Model):
