@@ -3,12 +3,28 @@ from app.tasks.generation import generation as generation_task
 from app.model import GenerationReport, WeatherForecast, is_historical_data_present
 
 
+def _shift_weather_features_back(weather_report, hours):
+    """
+    Shift weather observations back in time. The weather observation at time t can
+    then be interpreted as a forecast made at time t. A number of hours equal to the
+    shift are rolled off the end of the DataFrame.
+    """
+    shifted = weather_report.copy()
+    shifted.wind_speed = shifted.wind_speed.shift(-hours)
+    shifted.temperature = shifted.temperature.shift(-hours)
+    shifted.cloud_cover = shifted.cloud_cover.shift(-hours)
+    shifted.pressure = shifted.pressure.shift(-hours)
+    shifted = shifted[:-hours]
+    return shifted
+
+
 def _update_weather_forecast(weather_task, hour, hours_forecast):
     """
     Fetches latest weather forecast and saves it to the database.
     """
     forecast_horizon = hour + timedelta(hours=hours_forecast)
-    weather_forecast = weather_task(hour, forecast_horizon)
+    weather_forecast = weather_task(hour, forecast_horizon + timedelta(hours=1))
+    weather_forecast = _shift_weather_features_back(weather_forecast, 1)
     weather_forecast_window = weather_forecast.ix[hour:forecast_horizon]
     WeatherForecast.insert_or_replace(weather_forecast_window)
 
@@ -17,9 +33,9 @@ def _update_historical_data(generation_task, weather_task, hour, hours_past):
     start = hour - timedelta(hours=hours_past)
     end = hour
 
-    # generation_report = generation_task(start.replace(hour=0), end)
     generation_report = generation_task(start, end)
-    weather_report = weather_task(start, end)
+    weather_report = weather_task(start, end + timedelta(hours=1))
+    weather_report = _shift_weather_features_back(weather_report, 1)
 
     GenerationReport.insert_or_replace(generation_report)
     WeatherForecast.insert_or_replace(weather_report)
