@@ -9,7 +9,7 @@ from app import db
 RENEWABLES = ["wind", "hydro", "solar", "biomass"]
 NON_RENEWABLES = ["coal", "fossil", "natgas", "oil", "other", "refuse"]
 
-ModelParameters = namedtuple("ModelParameters", "hours_past hours_forecast")
+ModelParameters = namedtuple("ModelParameters", "hours_past hours_predict")
 
 
 def csv_to_pd(filename):

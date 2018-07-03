@@ -18,11 +18,11 @@ def _shift_weather_features_back(weather_report, hours):
     return shifted
 
 
-def _update_weather_forecast(weather_task, hour, hours_forecast):
+def _update_weather_forecast(weather_task, hour, hours_predict):
     """
     Fetches latest weather forecast and saves it to the database.
     """
-    forecast_horizon = hour + timedelta(hours=hours_forecast)
+    forecast_horizon = hour + timedelta(hours=hours_predict)
     weather_forecast = weather_task(hour, forecast_horizon + timedelta(hours=1))
     weather_forecast = _shift_weather_features_back(weather_forecast, 1)
     weather_forecast_window = weather_forecast.ix[hour:forecast_horizon]
@@ -41,11 +41,11 @@ def _update_historical_data(generation_task, weather_task, hour, hours_past):
     WeatherForecast.insert_or_replace(weather_report)
 
 
-def prepare_forecast(
+def prepare_prediction(
     historical_data_source, generation_task, weather_task, model_params, hour
 ):
     """
-    Prepare database for calculating a forecast.
+    Prepare database for predicting ratio of renewable energy.
 
     - always fetch latest weather forecast
     - maybe fetch historical data if missing
@@ -53,7 +53,7 @@ def prepare_forecast(
     The hour should be in UTC.
     """
 
-    _update_weather_forecast(weather_task, hour, model_params.hours_forecast)
+    _update_weather_forecast(weather_task, hour, model_params.hours_predict)
 
     generation_reports, weather_forecasts = historical_data_source(
         hour, model_params.hours_past

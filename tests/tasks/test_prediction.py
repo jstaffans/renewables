@@ -10,7 +10,7 @@ from app.model import (
     WeatherForecast,
     historical_data as db_historical_data,
 )
-from app.tasks.forecast import prepare_forecast
+from app.tasks.prediction import prepare_prediction
 from app.util import hour_now
 from tests.df_helper import (
     timestamped_single_generation_report,
@@ -23,7 +23,7 @@ from tests.model_helper import no_historical_data
 
 class TestForecast(TestCase):
 
-    model_params = ModelParameters(hours_past=25, hours_forecast=6)
+    model_params = ModelParameters(hours_past=25, hours_predict=6)
 
     def create_app(self):
         return create_app("app.TestingConfig")
@@ -47,7 +47,7 @@ class TestForecast(TestCase):
 
         hour = hour_now()
 
-        prepare_forecast(
+        prepare_prediction(
             no_historical_data,
             self.stub_generation_task,
             self.stub_weather_task,
@@ -67,19 +67,19 @@ class TestForecast(TestCase):
         if hour.minute == 0 and hour.second == 0 and hour.microsecond == 0:
             assert (
                 len(weather_reports_and_forecasts)
-                == self.model_params.hours_past + self.model_params.hours_forecast
+                == self.model_params.hours_past + self.model_params.hours_predict
             )
         else:
             assert (
                 len(weather_reports_and_forecasts)
-                == self.model_params.hours_past + self.model_params.hours_forecast + 1
+                == self.model_params.hours_past + self.model_params.hours_predict + 1
             )
 
         # running preparation task again should not update any data
         generation_reports_copy = generation_reports.copy()
         weather_reports_copy = weather_reports_and_forecasts.copy()
 
-        prepare_forecast(
+        prepare_prediction(
             db_historical_data,
             self.stub_generation_task,
             self.stub_weather_task,
@@ -108,7 +108,7 @@ class TestForecast(TestCase):
                 historical_weather_range_datetimes.append(end)
             return weather_report_range(start, end)
 
-        prepare_forecast(
+        prepare_prediction(
             no_historical_data,
             self.stub_generation_task,
             stub_weather_task,

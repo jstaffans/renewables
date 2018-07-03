@@ -12,7 +12,7 @@ from app.model import csv_to_pd, GenerationReport, ModelParameters, historical_d
 from app.tasks.generation import generation as generation_task
 from app.tasks.sun import sun_calendar as sun_calendar_task
 from app.tasks.weather import weather as weather_task
-from app.tasks.forecast import prepare_forecast as prepare_forecast_task
+from app.tasks.prediction import prepare_prediction as prepare_prediction_task
 from app.util import hour_now
 
 
@@ -121,17 +121,17 @@ def load_generation_report(control_area, input):
 @click.option("--control_area", default="DE(50HzT)")
 @click.option("--city_name", default="Berlin")
 @click.option("--hours_past", default=36)
-@click.option("--hours_forecast", default=6)
-def prepare_forecast(control_area, city_name, hours_past, hours_forecast):
+@click.option("--hours_predict", default=6)
+def prepare_prediction(control_area, city_name, hours_past, hours_predict):
     """
     Prepares database for forecast at the current point in time.
     """
-    model = ModelParameters(hours_past, hours_forecast)
+    model = ModelParameters(hours_past, hours_predict)
     hour = hour_now()
     generation = partial(generation_task, app.config["BA_NAME"], control_area)
     weather = partial(weather_task, app.config["WEATHER_API_TOKEN"], city_name)
-    prepare_forecast_task(historical_data, generation, weather, model, hour)
-    print(f"Prepared database for forecast at {hour}")
+    prepare_prediction_task(historical_data, generation, weather, model, hour)
+    print(f"Prepared database for prediction at {hour}")
 
 
 if __name__ == "__main__":
