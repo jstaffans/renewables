@@ -130,7 +130,7 @@ def prepare_forecast(control_area, city_name, hours_past, hours_forecast):
     hour = hour_now()
     generation = partial(generation_task, app.config["BA_NAME"], control_area)
     weather = partial(weather_task, app.config["WEATHER_API_TOKEN"], city_name)
-    prepare_forecast_task(historical_data, generation, weather, hour, model)
+    prepare_forecast_task(historical_data, generation, weather, model, hour)
     print(f"Prepared database for forecast at {hour}")
 
 

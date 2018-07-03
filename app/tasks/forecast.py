@@ -42,7 +42,7 @@ def _update_historical_data(generation_task, weather_task, hour, hours_past):
 
 
 def prepare_forecast(
-    historical_data_source, generation_task, weather_task, hour, model_params
+    historical_data_source, generation_task, weather_task, model_params, hour
 ):
     """
     Prepare database for calculating a forecast.

@@ -51,8 +51,8 @@ class TestForecast(TestCase):
             no_historical_data,
             self.stub_generation_task,
             self.stub_weather_task,
-            hour,
             self.model_params,
+            hour,
         )
 
         generation_reports = GenerationReport.query.order_by(
@@ -83,8 +83,8 @@ class TestForecast(TestCase):
             db_historical_data,
             self.stub_generation_task,
             self.stub_weather_task,
-            hour,
             self.model_params,
+            hour,
         )
 
         generation_reports = GenerationReport.query.order_by(
@@ -112,8 +112,8 @@ class TestForecast(TestCase):
             no_historical_data,
             self.stub_generation_task,
             stub_weather_task,
-            hour,
             self.model_params,
+            hour,
         )
 
         weather_reports_and_forecasts = WeatherForecast.query.order_by(
