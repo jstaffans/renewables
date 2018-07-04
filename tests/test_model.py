@@ -1,8 +1,14 @@
 import pytest
+import pandas as pd
 from flask.ext.testing import TestCase
 
 from app import create_app, db
-from app.model import GenerationReport, WeatherForecast, is_historical_data_present
+from app.model import (
+    GenerationReport,
+    WeatherForecast,
+    is_historical_data_present,
+    prediction_window,
+)
 from app.util import hour_now
 from tests.df_helper import single_generation_report, single_weather_forecast
 from tests.model_helper import full_historical_data, partial_historical_data
@@ -48,10 +54,29 @@ class TestModel(TestCase):
         )
 
     def test_prediction_window_fully_backed_by_historical_data(self):
-        generation_reports, weather_forecasts = full_historical_data(hour_now(), 48)
+        hour = hour_now()
+        generation_reports, weather_forecasts = full_historical_data(hour, 48)
         db.session.add_all(generation_reports)
         db.session.add_all(weather_forecasts)
         db.session.commit()
+
+        hours_past = 25
+        window = prediction_window(hour, hours_past)
+
+        assert isinstance(window, pd.DataFrame)
+
+        expected_columns = [
+            "renewables",
+            "non_renewables",
+            "sun",
+            "wind_speed",
+            "cloud_cover",
+            "temperature",
+            "pressure",
+        ]
+        rows, _ = window.shape
+        assert rows == hours_past
+        assert set(expected_columns) == set(window.columns.values)
 
     def setUp(self):
         db.create_all()

@@ -155,4 +155,21 @@ def prediction_window(hour, hours_past):
     Returns a Pandas DataFrame that is ready to be plugged in to the prediction model.
     """
 
-    pass
+    generation_reports, weather_forecasts = historical_data(hour, hours_past)
+
+    def public_vars(instance):
+        return {k: v for k, v in vars(instance).items() if not k.startswith("_")}
+
+    # TODO: patch missing generation reports with data from predictions
+
+    return pd.concat(
+        [
+            pd.DataFrame([public_vars(gr) for gr in generation_reports]).set_index(
+                "timestamp"
+            ),
+            pd.DataFrame([public_vars(wf) for wf in weather_forecasts]).set_index(
+                "timestamp"
+            ),
+        ],
+        axis=1,
+    )
