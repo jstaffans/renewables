@@ -1,6 +1,20 @@
+import os
 from datetime import datetime, timedelta
+from functools import lru_cache
+from keras.models import load_model
 from app.tasks.generation import generation as generation_task
 from app.model import GenerationReport, WeatherForecast, is_historical_data_present
+
+
+@lru_cache()
+def _load_model():
+    return load_model(
+        os.path.join(os.path.dirname(__file__), "model_non_overlap_24.h5")
+    )
+
+
+def _predict(hour):
+    model = load_model()
 
 
 def _shift_weather_features_back(weather_report, hours):
