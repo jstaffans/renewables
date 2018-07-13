@@ -10,9 +10,9 @@ from flask_webpack import Webpack
 from app import create_app
 from app.model import csv_to_pd, GenerationReport, ModelParameters, historical_data
 from app.tasks.generation import generation as generation_task
-from app.tasks.sun import sun_calendar as sun_calendar_task
 from app.tasks.weather import weather as weather_task
 from app.tasks.prediction import prepare_prediction as prepare_prediction_task
+from app.sun import sun_calendar
 from app.util import hour_now
 
 
@@ -99,7 +99,7 @@ def environment_range(city_name, start_date, days, output_dir):
     start = _parse_date(start_date)
     end = start + timedelta(days=days)
     filename = f"{output_dir}/environment_{start:%Y-%m-%d}-{end:%Y-%m-%d}.csv"
-    sun = sun_calendar_task(city_name, start, end)
+    sun = sun_calendar(city_name, start, end)
     weather = weather_task(app.config["WEATHER_API_TOKEN"], city_name, start, end)
     pd.concat([sun, weather], axis=1).to_csv(filename)
     print(f"Wrote {filename}")

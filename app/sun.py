@@ -14,16 +14,18 @@ def sun_calendar(city_name, start, end):
     """
     Returns an hourly sun calendar for the given city. The calendar contains the
     information whether or not the sun is up during a given day and hour.
+    The range is start to end, whole hours, exclusive.
 
     Timestamps are in UTC. Start and end dates are interpreted as UTC.
     """
     start_utc = pytz.utc.localize(start)
     end_utc = pytz.utc.localize(end)
+    end_utc_inclusive = end_utc + timedelta(days=1)
     a = Astral()
     city = a[city_name]
     d = start_utc
     records = []
-    while d < end_utc:
+    while d < end_utc_inclusive:
         sunrise = city.sunrise(date=d)
         sunset = city.sunset(date=d)
         records += [[t, _is_sun_up(sunrise, sunset, t)] for t in hour_range(d)]
@@ -34,6 +36,15 @@ def sun_calendar(city_name, start, end):
     for i, r in enumerate(records):
         records[i][1] = smoothed[i] if smoothed[i] >= 0 else 0
 
-    return pd.DataFrame.from_records(records, columns=["timestamp", "sun"]).set_index(
-        "timestamp"
-    )
+    calendar = pd.DataFrame.from_records(
+        records, columns=["timestamp", "sun"]
+    ).set_index("timestamp")
+
+    # return just the start-end window we want
+    return calendar.ix[start : end - timedelta(hours=1)]
+
+
+def sun_calendar_hours_past(city_name, hour, hours_past):
+    start = hour - timedelta(hours=hours_past)
+    end = hour - timedelta(hours=1)
+    return sun_calendar(city_name, start, end)
