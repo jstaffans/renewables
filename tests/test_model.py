@@ -68,7 +68,6 @@ class TestModel(TestCase):
         expected_columns = [
             "renewables",
             "non_renewables",
-            "sun",
             "wind_speed",
             "cloud_cover",
             "temperature",
