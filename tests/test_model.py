@@ -84,11 +84,8 @@ class TestModel(TestCase):
 
     def test_missing_data_in_window(self):
         hour = hour_now()
-        generation_reports, weather_forecasts = full_historical_data(hour, 48)
-        generation_reports.pop()
-        db.session.add_all(generation_reports)
-        db.session.add_all(weather_forecasts)
-        db.session.commit()
+        self._insert_full_historical_data(hour, 48)
+        self._delete_generation_reports(hour, 1)
 
         with pytest.raises(ValueError):
             hours_past = 25
@@ -104,6 +101,7 @@ class TestModel(TestCase):
         GenerationReport.query.filter(
             GenerationReport.timestamp >= hour - timedelta(hours=hours_past)
         ).delete()
+        db.session.commit()
 
     def _expect_prediction_window(self, window, hours_past):
         assert isinstance(window, pd.DataFrame)
