@@ -17,6 +17,10 @@ def csv_to_pd(filename):
     return pd.read_csv(filename, parse_dates=True, index_col="timestamp")
 
 
+def _public_vars(instance):
+    return {k: v for k, v in vars(instance).items() if not k.startswith("_")}
+
+
 class GenerationReport(db.Model):
     __table_args__ = {"info": {"without_rowid": True}}
     timestamp = db.Column(db.DateTime, primary_key=True)
@@ -129,6 +133,15 @@ def historical_data(hour, hours_past):
     return (generation_reports, weather_forecasts)
 
 
+def generation_predictions(start, hours):
+    return (
+        GenerationPrediction.query.filter(GenerationPrediction.timestamp >= start)
+        .order_by(GenerationPrediction.timestamp)
+        .limit(hours)
+        .all()
+    )
+
+
 def is_historical_data_present(generation_reports, weather_forecasts, hours_past):
     """
     Depending on the model used, we rely on some historical data
@@ -152,24 +165,38 @@ def prediction_window(hour, hours_past):
 
     Besides generation reports/forecasts, weather data is also part of the prediction window.
 
+    Raises ValueError if not enough data can be gathered to fill a window.
+
     Returns a Pandas DataFrame that is ready to be plugged in to the prediction model.
     """
 
-    generation_reports, weather_forecasts = historical_data(hour, hours_past)
+    generation, weather = historical_data(hour, hours_past)
 
-    def public_vars(instance):
-        return {k: v for k, v in vars(instance).items() if not k.startswith("_")}
+    missing_hours = hours_past - len(generation)
+    if missing_hours > 0:
+        predictions = generation_predictions(generation[-1].timestamp, missing_hours)
+        generation = generation + predictions
 
-    # TODO: patch missing generation reports with data from predictions
+    if min(len(generation), len(weather)) < hours_past:
+        raise ValueError("Not enough data to construct prediction window")
 
-    return pd.concat(
+    window = pd.concat(
         [
-            pd.DataFrame([public_vars(gr) for gr in generation_reports]).set_index(
+            pd.DataFrame([_public_vars(gr) for gr in generation]).set_index(
                 "timestamp"
             ),
-            pd.DataFrame([public_vars(wf) for wf in weather_forecasts]).set_index(
-                "timestamp"
-            ),
+            pd.DataFrame([_public_vars(wf) for wf in weather]).set_index("timestamp"),
         ],
         axis=1,
     )
+
+    window["renewables_ratio"] = window.apply(
+        lambda row: row["renewables_ratio"]
+        if "renewables_ratio" in row and row["renewables_ratio"] > 0
+        else row["renewables"] / (row["renewables"] + row["non_renewables"]),
+        axis=1,
+    )
+
+    window.drop(["renewables", "non_renewables"], axis=1, inplace=True)
+
+    return window

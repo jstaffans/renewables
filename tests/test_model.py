@@ -1,10 +1,12 @@
 import pytest
 import pandas as pd
+from datetime import timedelta
 from flask.ext.testing import TestCase
 
 from app import create_app, db
 from app.model import (
     GenerationReport,
+    GenerationPrediction,
     WeatherForecast,
     is_historical_data_present,
     prediction_window,
@@ -55,19 +57,59 @@ class TestModel(TestCase):
 
     def test_prediction_window_fully_backed_by_historical_data(self):
         hour = hour_now()
+        self._insert_full_historical_data(hour, 48)
+
+        hours_past = 25
+        window = prediction_window(hour, hours_past)
+
+        self._expect_prediction_window(window, hours_past)
+
+    def test_prediction_window_partially_backed_by_historical_data(self):
+        hour = hour_now()
+        self._insert_full_historical_data(hour, 48)
+
+        generation_prediction = GenerationPrediction(
+            timestamp=hour - timedelta(hours=1), renewables_ratio=0.6
+        )
+
+        db.session.add(generation_prediction)
+        db.session.commit()
+
+        self._delete_generation_reports(hour, 1)
+
+        hours_past = 25
+        window = prediction_window(hour, hours_past)
+
+        self._expect_prediction_window(window, hours_past)
+
+    def test_missing_data_in_window(self):
+        hour = hour_now()
+        generation_reports, weather_forecasts = full_historical_data(hour, 48)
+        generation_reports.pop()
+        db.session.add_all(generation_reports)
+        db.session.add_all(weather_forecasts)
+        db.session.commit()
+
+        with pytest.raises(ValueError):
+            hours_past = 25
+            window = prediction_window(hour, hours_past)
+
+    def _insert_full_historical_data(self, hour, hours):
         generation_reports, weather_forecasts = full_historical_data(hour, 48)
         db.session.add_all(generation_reports)
         db.session.add_all(weather_forecasts)
         db.session.commit()
 
-        hours_past = 25
-        window = prediction_window(hour, hours_past)
+    def _delete_generation_reports(self, hour, hours_past):
+        GenerationReport.query.filter(
+            GenerationReport.timestamp >= hour - timedelta(hours=hours_past)
+        ).delete()
 
+    def _expect_prediction_window(self, window, hours_past):
         assert isinstance(window, pd.DataFrame)
 
         expected_columns = [
-            "renewables",
-            "non_renewables",
+            "renewables_ratio",
             "wind_speed",
             "cloud_cover",
             "temperature",
@@ -76,6 +118,10 @@ class TestModel(TestCase):
         rows, _ = window.shape
         assert rows == hours_past
         assert set(expected_columns) == set(window.columns.values)
+
+        window_with_positive_ratio = window[window.renewables_ratio > 0]
+
+        assert window_with_positive_ratio.shape[0] == rows
 
     def setUp(self):
         db.create_all()
