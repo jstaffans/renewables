@@ -9,7 +9,7 @@ from app.model import (
     GenerationPrediction,
     WeatherForecast,
     is_historical_data_present,
-    generation_and_weather_window
+    generation_and_weather_window,
 )
 from app.util import hour_now
 from tests.df_helper import single_generation_report, single_weather_forecast
