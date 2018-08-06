@@ -9,7 +9,7 @@ from app.model import (
     GenerationPrediction,
     WeatherForecast,
     is_historical_data_present,
-    prediction_window,
+    generation_and_weather_window
 )
 from app.util import hour_now
 from tests.df_helper import single_generation_report, single_weather_forecast
@@ -55,32 +55,25 @@ class TestModel(TestCase):
             == True
         )
 
-    def test_prediction_window_fully_backed_by_historical_data(self):
+    def test_window_fully_backed_by_historical_data(self):
         hour = hour_now()
         self._insert_full_historical_data(hour, 48)
 
         hours_past = 25
-        window = prediction_window(hour, hours_past)
+        window = generation_and_weather_window(hour, hours_past)
 
-        self._expect_prediction_window(window, hours_past)
+        self._expect_generation_and_weather_window(window, hours_past)
 
-    def test_prediction_window_partially_backed_by_historical_data(self):
+    def test_window_partially_backed_by_historical_data(self):
         hour = hour_now()
         self._insert_full_historical_data(hour, 48)
-
-        generation_prediction = GenerationPrediction(
-            timestamp=hour - timedelta(hours=1), renewables_ratio=0.6
-        )
-
-        db.session.add(generation_prediction)
-        db.session.commit()
-
+        self._insert_generation_prediction(hour - timedelta(hours=1))
         self._delete_generation_reports(hour, 1)
 
         hours_past = 25
-        window = prediction_window(hour, hours_past)
+        window = generation_and_weather_window(hour, hours_past)
 
-        self._expect_prediction_window(window, hours_past)
+        self._expect_generation_and_weather_window(window, hours_past)
 
     def test_missing_data_in_window(self):
         hour = hour_now()
@@ -89,12 +82,26 @@ class TestModel(TestCase):
 
         with pytest.raises(ValueError):
             hours_past = 25
-            window = prediction_window(hour, hours_past)
+            window = generation_and_weather_window(hour, hours_past)
+
+    def test_empty_db(self):
+        hour = hour_now()
+        with pytest.raises(ValueError):
+            hours_past = 25
+            window = generation_and_weather_window(hour, hours_past)
 
     def _insert_full_historical_data(self, hour, hours):
         generation_reports, weather_forecasts = full_historical_data(hour, 48)
         db.session.add_all(generation_reports)
         db.session.add_all(weather_forecasts)
+        db.session.commit()
+
+    def _insert_generation_prediction(self, hour):
+        generation_prediction = GenerationPrediction(
+            timestamp=hour, renewables_ratio=0.6
+        )
+
+        db.session.add(generation_prediction)
         db.session.commit()
 
     def _delete_generation_reports(self, hour, hours_past):
@@ -103,7 +110,7 @@ class TestModel(TestCase):
         ).delete()
         db.session.commit()
 
-    def _expect_prediction_window(self, window, hours_past):
+    def _expect_generation_and_weather_window(self, window, hours_past):
         assert isinstance(window, pd.DataFrame)
 
         expected_columns = [
@@ -117,8 +124,8 @@ class TestModel(TestCase):
         assert rows == hours_past
         assert set(expected_columns) == set(window.columns.values)
 
+        # ratio should never be negative!
         window_with_positive_ratio = window[window.renewables_ratio > 0]
-
         assert window_with_positive_ratio.shape[0] == rows
 
     def setUp(self):

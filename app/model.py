@@ -154,7 +154,7 @@ def is_historical_data_present(generation_reports, weather_forecasts, hours_past
     )
 
 
-def prediction_window(hour, hours_past):
+def generation_and_weather_window(hour, hours_past):
     """
     (Historical) data which forms the base for a prediction. The prediction is made
     for the next hour relative to the "hour" parameter.
@@ -173,6 +173,10 @@ def prediction_window(hour, hours_past):
     generation, weather = historical_data(hour, hours_past)
 
     missing_hours = hours_past - len(generation)
+
+    if missing_hours == hours_past:
+        raise ValueError("Not enough data to construct prediction window")
+
     if missing_hours > 0:
         predictions = generation_predictions(generation[-1].timestamp, missing_hours)
         generation = generation + predictions
