@@ -1,13 +1,8 @@
 import pytest
 import pandas as pd
 from datetime import datetime, timedelta
-import pytz
 
 from app.sun import sun_calendar, sun_calendar_hours_past
-
-
-def _utc(*args):
-    return pytz.utc.localize(datetime(*args))
 
 
 class TestSun(object):
@@ -18,15 +13,15 @@ class TestSun(object):
 
         rows, _ = calendar.shape
         assert rows == 24
-        assert calendar.iloc[0].name == _utc(2018, 4, 25)
-        assert calendar.iloc[23].name == _utc(2018, 4, 25, 23)
+        assert calendar.iloc[0].name == datetime(2018, 4, 25)
+        assert calendar.iloc[23].name == datetime(2018, 4, 25, 23)
 
     def test_24_hours_not_midnight(self):
         start = datetime(2018, 4, 25, 6)
         end = start + timedelta(days=1)
         calendar = sun_calendar("Berlin", start, end)
-        assert calendar.iloc[0].name == _utc(2018, 4, 25, 6)
-        assert calendar.iloc[23].name == _utc(2018, 4, 26, 5)
+        assert calendar.iloc[0].name == datetime(2018, 4, 25, 6)
+        assert calendar.iloc[23].name == datetime(2018, 4, 26, 5)
 
     def test_48_hours(self):
         start = datetime(2018, 4, 25)
@@ -35,8 +30,8 @@ class TestSun(object):
 
         rows, _ = calendar.shape
         assert rows == 48
-        assert calendar.iloc[0].name == _utc(2018, 4, 25)
-        assert calendar.iloc[47].name == _utc(2018, 4, 26, 23)
+        assert calendar.iloc[0].name == datetime(2018, 4, 25)
+        assert calendar.iloc[47].name == datetime(2018, 4, 26, 23)
 
     def test_day_and_night(self):
         start = datetime(2018, 4, 25)
@@ -49,4 +44,5 @@ class TestSun(object):
         hours_past = 25
         calendar = sun_calendar_hours_past("Berlin", hour, hours_past)
         rows, _ = calendar.shape
-        assert rows == 24
+        assert rows == hours_past
+        assert calendar.iloc[-1].name == datetime(2018, 4, 25, 17)
