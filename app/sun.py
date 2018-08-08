@@ -46,5 +46,5 @@ def sun_calendar(city_name, start, end):
 
 def sun_calendar_hours_past(city_name, hour, hours_past):
     start = hour - timedelta(hours=hours_past)
-    end = hour - timedelta(hours=1)
+    end = hour
     return sun_calendar(city_name, start, end)
