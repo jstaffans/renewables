@@ -28,7 +28,10 @@ def sun_calendar(city_name, start, end):
     while d < end_utc_inclusive:
         sunrise = city.sunrise(date=d)
         sunset = city.sunset(date=d)
-        records += [[t.replace(tzinfo=None), _is_sun_up(sunrise, sunset, t)] for t in hour_range(d)]
+        records += [
+            [t.replace(tzinfo=None), _is_sun_up(sunrise, sunset, t)]
+            for t in hour_range(d)
+        ]
         d = d + timedelta(days=1)
 
     # smooth out transition between night and day to give model a chance to react
