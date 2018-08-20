@@ -16,6 +16,7 @@ class Config(object):
     BA_NAME = "EU"
     CITY_NAME = "Berlin"
     WEATHER_API_TOKEN = os.environ.get("WEATHER_API_TOKEN")
+    MODEL_LOOKBACK = 27
 
 
 class ProductionConfig(Config):
