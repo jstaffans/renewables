@@ -62,6 +62,13 @@ class GenerationPrediction(db.Model):
     timestamp = db.Column(db.DateTime, primary_key=True)
     renewables_ratio = db.Column(db.Float, nullable=False)
 
+    @staticmethod
+    def insert_or_replace(timestamp, renewables_ratio):
+        db.engine.execute(
+            GenerationPrediction.__table__.insert().prefix_with("OR REPLACE"),
+            {"timestamp": timestamp, "renewables_ratio": renewables_ratio},
+        )
+
     def __repr__(self):
         timestamp = f"timestamp='{self.timestamp:%Y-%m-%d %H:%M}'"
         ratio = f"renewables_ratio={self.renewables_ratio:.2f}"
