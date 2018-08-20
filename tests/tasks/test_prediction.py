@@ -1,16 +1,20 @@
 import pytest
 from datetime import datetime, timedelta
+from flask import current_app as app
 from flask.ext.testing import TestCase
+from functools import partial
 import pandas as pd
 
 from app import create_app, db
 from app.model import (
     ModelParameters,
     GenerationReport,
+    GenerationPrediction,
     WeatherForecast,
     historical_data as db_historical_data,
 )
-from app.tasks.prediction import prepare_prediction
+from app.sun import sun_calendar_hours_past
+from app.tasks.prediction import prepare_prediction, predict
 from app.util import hour_now
 from tests.df_helper import (
     timestamped_single_generation_report,
@@ -18,7 +22,7 @@ from tests.df_helper import (
     weather_report_range,
     generation_report_range,
 )
-from tests.model_helper import no_historical_data
+from tests.model_helper import full_historical_data, no_historical_data
 
 
 class TestForecast(TestCase):
@@ -122,7 +126,36 @@ class TestForecast(TestCase):
 
         # Rely on LRU cache of weather_report_range
         raw_weather_data = weather_report_range(*historical_weather_range_datetimes)
+
+        # check that weather report is present AND shifted by one hour
+        # (re-interpreted as forecast for time t+1)
         assert (
             weather_reports_and_forecasts[0].temperature
             == raw_weather_data.ix[1, "temperature"]
         )
+
+    def test_predictions(self):
+        model = ModelParameters(app.config["MODEL_LOOKBACK"], 1)
+        hour = hour_now()
+
+        generation_reports, weather_forecasts = full_historical_data(hour, 48)
+        db.session.add_all(generation_reports)
+        db.session.add_all(weather_forecasts)
+        db.session.commit()
+
+        sun_calendar = partial(sun_calendar_hours_past, "Berlin")
+
+        prediction_t1 = predict(sun_calendar, model, hour)
+
+        assert prediction_t1.renewables_ratio > 0 and prediction_t1.renewables_ratio < 1.0
+
+        db.session.merge(prediction_t1)
+
+        next_hour = hour + timedelta(hours=1)
+        _, weather_forecasts = full_historical_data(next_hour, 1)
+        db.session.add_all(weather_forecasts)
+
+        prediction_t2 = predict(sun_calendar, model, next_hour)
+
+        assert prediction_t2.renewables_ratio > 0 and prediction_t2.renewables_ratio < 1.0
+        assert prediction_t1.renewables_ratio != prediction_t2.renewables_ratio

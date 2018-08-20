@@ -1,5 +1,6 @@
 from collections import namedtuple
 from datetime import datetime, timedelta
+from sqlalchemy import and_
 import pandas as pd
 
 from app import db
@@ -10,6 +11,16 @@ RENEWABLES = ["wind", "hydro", "solar", "biomass"]
 NON_RENEWABLES = ["coal", "fossil", "natgas", "oil", "other", "refuse"]
 
 ModelParameters = namedtuple("ModelParameters", "hours_past hours_predict")
+
+# These are in the same order as the trained model
+MODEL_FEATURES = [
+    "renewables_ratio",
+    "cloud_cover",
+    "pressure",
+    "sun",
+    "temperature",
+    "wind_speed",
+]
 
 
 def csv_to_pd(filename):
@@ -123,7 +134,10 @@ def historical_data(hour, hours_past):
 
     generation_reports = (
         GenerationReport.query.filter(
-            GenerationReport.timestamp >= hour - timedelta(hours=hours_past)
+            and_(
+                GenerationReport.timestamp >= hour - timedelta(hours=hours_past),
+                GenerationReport.timestamp < hour,
+            )
         )
         .order_by(GenerationReport.timestamp)
         .all()
@@ -131,7 +145,10 @@ def historical_data(hour, hours_past):
 
     weather_forecasts = (
         WeatherForecast.query.filter(
-            WeatherForecast.timestamp >= hour - timedelta(hours=hours_past)
+            and_(
+                WeatherForecast.timestamp >= hour - timedelta(hours=hours_past),
+                WeatherForecast.timestamp < hour,
+            )
         )
         .order_by(WeatherForecast.timestamp)
         .all()
@@ -163,14 +180,17 @@ def is_historical_data_present(generation_reports, weather_forecasts, hours_past
 
 def generation_and_weather_window(hour, hours_past):
     """
-    (Historical) data which forms the base for a prediction. The prediction is made
-    for the next hour relative to the "hour" parameter.
+    Data which forms the base for a prediction. The prediction is made for the next hour
+    relative to the "hour" parameter.
 
     To support making predictions more than hour into the future, generation data is first
     retrieved from generation reports (ie actual data). If that's not enough, we attempt to
     retrieve a generation prediction for the given hour.
 
     Besides generation reports/forecasts, weather data is also part of the prediction window.
+
+    Making predictions more than one hour into the future means calling this function multiple
+    times, saving the predictions into the database between calls.
 
     Raises ValueError if not enough data can be gathered to fill a window.
 
@@ -201,13 +221,17 @@ def generation_and_weather_window(hour, hours_past):
         axis=1,
     )
 
-    window["renewables_ratio"] = window.apply(
+    window["renewables_ratio"] = _calculate_renewables_ratio(window)
+
+    window.drop(["renewables", "non_renewables"], axis=1, inplace=True)
+
+    return window
+
+
+def _calculate_renewables_ratio(window):
+    return window.apply(
         lambda row: row["renewables_ratio"]
         if "renewables_ratio" in row and row["renewables_ratio"] > 0
         else row["renewables"] / (row["renewables"] + row["non_renewables"]),
         axis=1,
     )
-
-    window.drop(["renewables", "non_renewables"], axis=1, inplace=True)
-
-    return window
