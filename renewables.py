@@ -8,11 +8,20 @@ from flask import Flask, render_template
 from flask_webpack import Webpack
 
 from app import create_app
-from app.model import csv_to_pd, GenerationReport, ModelParameters, historical_data
+from app.model import (
+    csv_to_pd,
+    GenerationReport,
+    GenerationPrediction,
+    ModelParameters,
+    historical_data,
+)
 from app.tasks.generation import generation as generation_task
 from app.tasks.weather import weather as weather_task
-from app.tasks.prediction import prepare_prediction as prepare_prediction_task
-from app.sun import sun_calendar
+from app.tasks.prediction import (
+    prepare_prediction as prepare_prediction_task,
+    predict as prediction_task,
+)
+from app.sun import sun_calendar_hours_past
 from app.util import hour_now
 
 
@@ -132,6 +141,34 @@ def prepare_prediction(control_area, city_name, hours_past, hours_predict):
     weather = partial(weather_task, app.config["WEATHER_API_TOKEN"], city_name)
     prepare_prediction_task(historical_data, generation, weather, model, hour)
     print(f"Prepared database for prediction at {hour}")
+
+
+@app.cli.command()
+@click.option("--city_name", default="Berlin")
+@click.option("--prediction_time", default=hour_now())
+@click.option("--hours_past", default=27)
+@click.option("--hours_predict", default=1)
+def predict(city_name, prediction_time, hours_past, hours_predict):
+    """
+    Makes a prediction at the given point in time based on the generation and
+    weather data available in the database. Stores the prediction in the database.
+
+    By default, prediction is performed for the current hour.
+    If another prediction time is used, the given time string
+    is interpreted as UTC, e.g. "2018-08-08T19:00".
+
+    hours_past must align with the pre-trained prediction model.
+    """
+    model = ModelParameters(hours_past, hours_predict)
+    hour = (
+        prediction_time
+        if isinstance(prediction_time, datetime)
+        else parse(prediction_time)
+    )
+    sun_calendar_for_city = partial(sun_calendar_hours_past, city_name)
+    prediction = prediction_task(sun_calendar_for_city, model, hour)
+    print(prediction.renewables_ratio)
+    # GenerationPrediction.insert_or_replace(hour, predicted_ratio)
 
 
 if __name__ == "__main__":
