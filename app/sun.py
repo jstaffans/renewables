@@ -47,7 +47,7 @@ def sun_calendar(city_name, start, end):
     return calendar.ix[start : end - timedelta(hours=1)]
 
 
-def sun_calendar_hours_past(city_name, hour, hours_past):
+def sun_calendar_lookback(city_name, hour, hours_past):
     start = hour - timedelta(hours=hours_past)
     end = hour
     return sun_calendar(city_name, start, end)

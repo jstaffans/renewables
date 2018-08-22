@@ -12,8 +12,9 @@ from app.model import (
     GenerationPrediction,
     WeatherForecast,
     historical_data as db_historical_data,
+    MODEL_FEATURES,
 )
-from app.sun import sun_calendar_hours_past
+from app.sun import sun_calendar_lookback
 from app.tasks.prediction import prepare_prediction, predict
 from app.util import hour_now
 from tests.df_helper import (
@@ -134,28 +135,19 @@ class TestForecast(TestCase):
             == raw_weather_data.ix[1, "temperature"]
         )
 
-    def test_predictions(self):
+    def test_prediction(self):
         model = ModelParameters(app.config["MODEL_LOOKBACK"], 1)
         hour = hour_now()
 
-        generation_reports, weather_forecasts = full_historical_data(hour, 48)
-        db.session.add_all(generation_reports)
-        db.session.add_all(weather_forecasts)
-        db.session.commit()
+        labels = MODEL_FEATURES
+        sample_row = (0.5, 0.5, 1023.0, 1.0, 22.0, 5.0)
 
-        sun_calendar = partial(sun_calendar_hours_past, "Berlin")
+        sample = pd.DataFrame.from_records([sample_row], columns=labels)
+        window = pd.concat([sample] * model.hours_past)
 
-        prediction_t1 = predict(sun_calendar, model, hour)
+        prediction_t1 = predict(window, hour)
 
-        assert prediction_t1.renewables_ratio > 0 and prediction_t1.renewables_ratio < 1.0
+        assert (
+            prediction_t1.renewables_ratio > 0 and prediction_t1.renewables_ratio < 1.0
+        )
 
-        db.session.merge(prediction_t1)
-
-        next_hour = hour + timedelta(hours=1)
-        _, weather_forecasts = full_historical_data(next_hour, 1)
-        db.session.add_all(weather_forecasts)
-
-        prediction_t2 = predict(sun_calendar, model, next_hour)
-
-        assert prediction_t2.renewables_ratio > 0 and prediction_t2.renewables_ratio < 1.0
-        assert prediction_t1.renewables_ratio != prediction_t2.renewables_ratio

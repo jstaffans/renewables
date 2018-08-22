@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 from datetime import datetime, timedelta
 
-from app.sun import sun_calendar, sun_calendar_hours_past
+from app.sun import sun_calendar, sun_calendar_lookback
 
 
 class TestSun(object):
@@ -39,10 +39,10 @@ class TestSun(object):
         assert calendar.iloc[0]["sun"] == 0
         assert calendar.iloc[11]["sun"] > 0.999
 
-    def test_hours_past(self):
+    def test_lookback(self):
         hour = datetime(2018, 4, 25, 18)
         hours_past = 25
-        calendar = sun_calendar_hours_past("Berlin", hour, hours_past)
+        calendar = sun_calendar_lookback("Berlin", hour, hours_past)
         rows, _ = calendar.shape
         assert rows == hours_past
         assert calendar.iloc[-1].name == datetime(2018, 4, 25, 17)

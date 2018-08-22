@@ -14,6 +14,7 @@ from app.model import (
     GenerationPrediction,
     ModelParameters,
     historical_data,
+    generation_and_weather_lookback
 )
 from app.tasks.generation import generation as generation_task
 from app.tasks.weather import weather as weather_task
@@ -21,7 +22,7 @@ from app.tasks.prediction import (
     prepare_prediction as prepare_prediction_task,
     predict as prediction_task,
 )
-from app.sun import sun_calendar_hours_past
+from app.sun import sun_calendar_lookback
 from app.util import hour_now
 
 
@@ -165,8 +166,13 @@ def predict(city_name, prediction_time, hours_past, hours_predict):
         if isinstance(prediction_time, datetime)
         else parse(prediction_time)
     )
-    sun_calendar_for_city = partial(sun_calendar_hours_past, city_name)
-    prediction = prediction_task(sun_calendar_for_city, model, hour)
+    generation_and_weather = generation_and_weather_lookback(
+        hour, model_params.hours_past
+    )
+    sun = sun_calendar_lookback(city_name, hour, model_params.hours_past)
+    window = pd.concat([generation_and_weather, sun], axis=1)
+
+    prediction = prediction_task(window, hour)
     print(prediction.renewables_ratio)
     # GenerationPrediction.insert_or_replace(hour, predicted_ratio)
 

@@ -178,21 +178,21 @@ def is_historical_data_present(generation_reports, weather_forecasts, hours_past
     )
 
 
-def generation_and_weather_window(hour, hours_past):
+def generation_and_weather_lookback(hour, hours_past):
     """
-    Data which forms the base for a prediction. The prediction is made for the next hour
+    Data which forms the base for a prediction. A prediction can be makde for the next hour
     relative to the "hour" parameter.
 
     To support making predictions more than hour into the future, generation data is first
     retrieved from generation reports (ie actual data). If that's not enough, we attempt to
     retrieve a generation prediction for the given hour.
 
-    Besides generation reports/forecasts, weather data is also part of the prediction window.
+    Besides generation reports/forecasts, weather data is also part of the prediction dataset.
 
     Making predictions more than one hour into the future means calling this function multiple
     times, saving the predictions into the database between calls.
 
-    Raises ValueError if not enough data can be gathered to fill a window.
+    Raises ValueError if not enough data can be gathered to fill a lookback window.
 
     Returns a Pandas DataFrame that is ready to be plugged in to the prediction model.
     """
@@ -202,14 +202,14 @@ def generation_and_weather_window(hour, hours_past):
     missing_hours = hours_past - len(generation)
 
     if missing_hours == hours_past:
-        raise ValueError("Not enough data to construct prediction window")
+        raise ValueError("Not enough data for prediction")
 
     if missing_hours > 0:
         predictions = generation_predictions(generation[-1].timestamp, missing_hours)
         generation = generation + predictions
 
     if min(len(generation), len(weather)) < hours_past:
-        raise ValueError("Not enough data to construct prediction window")
+        raise ValueError("Not enough data prediction")
 
     window = pd.concat(
         [

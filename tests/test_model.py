@@ -9,7 +9,7 @@ from app.model import (
     GenerationPrediction,
     WeatherForecast,
     is_historical_data_present,
-    generation_and_weather_window,
+    generation_and_weather_lookback,
 )
 from app.util import hour_now
 from tests.df_helper import single_generation_report, single_weather_forecast
@@ -60,7 +60,7 @@ class TestModel(TestCase):
         self._insert_full_historical_data(hour, 48)
 
         hours_past = 25
-        window = generation_and_weather_window(hour, hours_past)
+        window = generation_and_weather_lookback(hour, hours_past)
 
         self._expect_generation_and_weather_window(window, hours_past)
 
@@ -71,7 +71,7 @@ class TestModel(TestCase):
         self._delete_generation_reports(hour, 1)
 
         hours_past = 25
-        window = generation_and_weather_window(hour, hours_past)
+        window = generation_and_weather_lookback(hour, hours_past)
 
         self._expect_generation_and_weather_window(window, hours_past)
 
@@ -82,13 +82,13 @@ class TestModel(TestCase):
 
         with pytest.raises(ValueError):
             hours_past = 25
-            window = generation_and_weather_window(hour, hours_past)
+            window = generation_and_weather_lookback(hour, hours_past)
 
     def test_empty_db(self):
         hour = hour_now()
         with pytest.raises(ValueError):
             hours_past = 25
-            window = generation_and_weather_window(hour, hours_past)
+            window = generation_and_weather_lookback(hour, hours_past)
 
     def _insert_full_historical_data(self, hour, hours):
         generation_reports, weather_forecasts = full_historical_data(hour, 48)

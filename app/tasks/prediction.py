@@ -12,7 +12,7 @@ from app.model import (
     GenerationPrediction,
     WeatherForecast,
     is_historical_data_present,
-    generation_and_weather_window,
+    generation_and_weather_lookback,
     MODEL_FEATURES,
 )
 
@@ -103,19 +103,15 @@ def prepare_prediction(
     )
 
 
-def predict(sun_calendar, model_params, hour):
+def predict(window, hour):
     """
-    Makes a prediction for hour+1. Assumes DB contains enough data to construct
-    a prediction window.
+    Makes a prediction for hour+1.
+
+    The window parameter is generation and weather data for a lookback of N hours,
+    where N depends on the model parameters.
 
     Raises ValueError if not enough data is available to make a prediction.
     """
-    generation_and_weather = generation_and_weather_window(
-        hour, model_params.hours_past
-    )
-    sun = sun_calendar(hour, model_params.hours_past)
-    window = pd.concat([generation_and_weather, sun], axis=1)
-
     predicted_ratio = _predict(window)
 
     return GenerationPrediction(timestamp=hour, renewables_ratio=predicted_ratio)
